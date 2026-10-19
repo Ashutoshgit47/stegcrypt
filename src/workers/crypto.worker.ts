@@ -320,7 +320,7 @@ self.onmessage = (event: MessageEvent<CryptoWorkerRequest>) => {
         }
 
         case 'CANCEL':
-            activeJobs.set(id, false);
+            activeJobs.delete(id);
             break;
     }
 };

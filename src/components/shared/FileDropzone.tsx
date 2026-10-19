@@ -8,7 +8,7 @@ interface FileDropzoneProps {
   maxSize: number; // in MB
   onFileSelect: (file: File | null) => void;
   label: string;
-  description: string;
+  description?: string;
   selectedFile: File | null;
   error?: string;
 }
@@ -46,7 +46,6 @@ export function FileDropzone({
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
-
     const file = e.dataTransfer.files[0];
     if (file) {
       const validationError = validateFile(file);
@@ -78,38 +77,41 @@ export function FileDropzone({
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-xs font-black uppercase tracking-wide">{label}</label>
 
       {selectedFile ? (
-        <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg border-2 border-border bg-card">
-          <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <File className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+        /* ── Selected state ─────────────────────────── */
+        <div className="flex items-center gap-3 p-4 border-[3px] border-[#121212] dark:border-white bg-[#F0C020] shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] transition-all">
+          <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center bg-[#121212] dark:bg-white border-[2px] border-[#121212] dark:border-white">
+            <File className="h-5 w-5 text-white dark:text-[#121212]" />
           </div>
           <div className="flex-1 min-w-0 overflow-hidden">
-            <p className="text-sm font-medium truncate max-w-full">{selectedFile.name}</p>
-            <p className="text-xs text-muted-foreground">{formatFileSize(selectedFile.size)}</p>
+            <p className="text-sm font-black uppercase truncate max-w-full text-[#121212]">{selectedFile.name}</p>
+            <p className="text-xs font-bold opacity-70 text-[#121212]">{formatFileSize(selectedFile.size)}</p>
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 sm:h-8 sm:w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
+            className="h-8 w-8 flex-shrink-0 text-[#121212] hover:text-[#D02020] hover:bg-transparent"
             onClick={() => onFileSelect(null)}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 stroke-[3px]" />
           </Button>
         </div>
       ) : (
+        /* ── Drop zone ──────────────────────────────── */
         <div
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
           className={cn(
-            'relative flex flex-col items-center justify-center p-4 sm:p-8 rounded-lg border-2 border-dashed transition-colors cursor-pointer',
+            'relative flex flex-col items-center justify-center p-6 sm:p-8',
+            'border-[3px] border-dashed transition-all cursor-pointer',
             isDragging
-              ? 'border-primary bg-primary/5'
-              : 'border-border hover:border-muted-foreground/50 hover:bg-muted/30',
-            error && 'border-destructive'
+              ? 'border-[#D02020] bg-[#D02020]/5 shadow-[4px_4px_0px_0px_#D02020] translate-x-[2px] translate-y-[2px]'
+              : 'border-[#121212] dark:border-white hover:bg-[#F0C020]/10 hover:shadow-[4px_4px_0px_0px_#F0C020] hover:border-[#F0C020]',
+            error && 'border-[#D02020] bg-[#D02020]/5'
           )}
         >
           <input
@@ -118,22 +120,28 @@ export function FileDropzone({
             onChange={handleFileInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
-          <Upload className={cn(
-            'h-8 w-8 sm:h-10 sm:w-10 mb-2 sm:mb-3',
-            isDragging ? 'text-primary' : 'text-muted-foreground'
-          )} />
-          <p className="text-sm font-medium text-center mb-1">
+          <div className={cn(
+            'h-12 w-12 flex items-center justify-center border-[3px] mb-3 transition-all',
+            isDragging
+              ? 'border-[#D02020] bg-[#D02020] text-white'
+              : 'border-[#121212] dark:border-white text-[#121212] dark:text-white'
+          )}>
+            <Upload className="h-6 w-6 stroke-[2.5px]" />
+          </div>
+          <p className="text-sm font-black uppercase tracking-wide text-center mb-1">
             Drop file here or click to browse
           </p>
-          <p className="text-xs text-muted-foreground text-center">
-            {description} • Max {maxSize}MB
-          </p>
+          {description && (
+            <p className="text-xs font-bold opacity-60 text-center">
+              {description} · Max {maxSize}MB
+            </p>
+          )}
         </div>
       )}
 
       {error && (
-        <div className="flex items-center gap-2 text-destructive text-sm">
-          <AlertCircle className="h-4 w-4" />
+        <div className="flex items-center gap-2 text-[#D02020] text-sm font-bold">
+          <AlertCircle className="h-4 w-4 stroke-[3px] flex-shrink-0" />
           {error}
         </div>
       )}

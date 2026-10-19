@@ -9,7 +9,7 @@ import { ModeProvider } from "@/contexts/ModeContext";
 import { SEOProvider } from "@/components/SEOProvider";
 import { Layout } from "@/components/layout/Layout";
 
-// Eagerly loaded - core functionality
+// Eagerly loaded - core functionality (most visited pages)
 import Index from "./pages/Index";
 import Encode from "./pages/Encode";
 import Decode from "./pages/Decode";
@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 const Security = lazy(() => import("./pages/Security"));
 const Help = lazy(() => import("./pages/Help"));
 const About = lazy(() => import("./pages/About"));
+const Tools = lazy(() => import("./pages/Tools"));
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/encode" element={<Encode />} />
                     <Route path="/decode" element={<Decode />} />
+                    <Route path="/tools" element={<Tools />} />
                     <Route path="/security" element={<Security />} />
                     <Route path="/help" element={<Help />} />
                     <Route path="/about" element={<About />} />

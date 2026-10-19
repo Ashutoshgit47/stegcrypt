@@ -342,7 +342,7 @@ function decodeWAV(buffer: ArrayBuffer): { samples: Int16Array; sampleRate: numb
     if (wave !== 'WAVE') throw new Error('Invalid WAV: missing WAVE');
 
     let offset = 12;
-    let sampleRate = 0, channels = 0, bitsPerSample = 0;
+    let sampleRate = 0, channels = 0;
     let dataOffset = 0, dataSize = 0;
 
     while (offset < data.length) {
@@ -355,7 +355,7 @@ function decodeWAV(buffer: ArrayBuffer): { samples: Int16Array; sampleRate: numb
             if (audioFormat !== 1) throw new Error('Only PCM WAV supported');
             channels = view.getUint16(offset + 2, true);
             sampleRate = view.getUint32(offset + 4, true);
-            bitsPerSample = view.getUint16(offset + 14, true);
+            const bitsPerSample = view.getUint16(offset + 14, true);
             if (bitsPerSample !== 16) throw new Error('Only 16-bit WAV supported');
         } else if (chunkId === 'data') {
             dataOffset = offset;

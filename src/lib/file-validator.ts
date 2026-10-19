@@ -1,6 +1,7 @@
 // File validation utilities - PRD-compliant validation
 
 import { FILE_LIMITS, SUPPORTED_FORMATS, WARNING_MESSAGES } from './constants';
+import { isWebPLossless } from './webp-codec';
 
 export type FileType = 'imageCarrier' | 'audioCarrier' | 'payload';
 export type Platform = 'desktop' | 'mobile';

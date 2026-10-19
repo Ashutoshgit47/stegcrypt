@@ -1,0 +1,45 @@
+{
+  "name": "StegCrypt",
+  "short_name": "StegCrypt",
+  "description": "Hide encrypted secrets in plain sight. Browser-based steganography with military-grade encryption.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#121212",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "security", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Encode",
+      "short_name": "Encode",
+      "description": "Hide encrypted data in a file",
+      "url": "/encode",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Decode",
+      "short_name": "Decode",
+      "description": "Extract hidden data from a file",
+      "url": "/decode",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Tools",
+      "short_name": "Tools",
+      "description": "Security tools: hash, base64, password generator",
+      "url": "/tools",
+      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ],
+  "prefer_related_applications": false
+}

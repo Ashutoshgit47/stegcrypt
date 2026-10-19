@@ -64,16 +64,17 @@ class WorkerClient<RequestType, ResultType> {
         }
     }
 
-    private handleError(error: ErrorEvent) {
-        console.error('Worker error:', error);
-        // Reject all pending jobs when worker crashes
-        for (const [id, job] of this.jobs) {
-            job.reject(new Error('Worker crashed: ' + error.message));
-            this.jobs.delete(id);
-        }
+  private handleError(error: ErrorEvent) {
+    if (import.meta.env.DEV) {
+      console.error('[StegCrypt] Worker error:', error);
     }
+    for (const [id, job] of this.jobs) {
+      job.reject(new Error('Worker crashed: ' + error.message));
+      this.jobs.delete(id);
+    }
+  }
 
-    execute(
+  execute(
         request: Omit<RequestType, 'id'>,
         onProgress?: ProgressCallback
     ): { promise: Promise<ResultType>; cancel: () => void } {

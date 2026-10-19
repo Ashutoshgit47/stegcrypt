@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Lock, Download, AlertTriangle, Info, Image, Music } from 'lucide-react';
+import { Lock, Download, AlertTriangle, Info, Image, Music, Key } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,12 +12,16 @@ import { EngineStatus } from '@/components/shared/EngineStatus';
 import { PageSEO } from '@/components/PageSEO';
 import { useMode } from '@/contexts/ModeContext';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
+import { useNavigate } from 'react-router-dom';
 import { useWasmEngine, mapToEngineState } from '@/hooks/use-wasm-engine';
 import { encryptInWorker } from '@/workers/worker-client';
-import { packEncryptedData, stringToBuffer } from '@/lib/crypto';
+import { packEncryptedData, stringToBuffer, generateSecurePassword } from '@/lib/crypto';
 import { loadImage, analyzeImageCapacity, embedData, extractData, createPngBlob, createBmpBlob } from '@/lib/steganography';
 import { decodeWav, encodeWav, analyzeWavCapacity, embedWavData, extractWavData, WavData } from '@/lib/wav-codec';
 import { packPayload } from '@/lib/payload-helper';
+import { isWebPLossless } from '@/lib/webp-codec';
+import { PasswordGenerator } from '@/components/shared/PasswordGenerator';
 import {
   validateCarrierFile,
   validatePayloadFile,
@@ -44,14 +48,16 @@ import { cn } from '@/lib/utils';
 type CarrierType = 'image' | 'audio' | null;
 
 const detectCarrierType = (file: File): CarrierType => {
-  if (file.type === 'image/png' || file.type === 'image/bmp') return 'image';
-  if (file.type === 'audio/wav' || file.type === 'audio/wave' || file.name.endsWith('.wav')) return 'audio';
+  const type = file.type;
+  if (type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff') return 'image';
+  if (type === 'audio/wav' || type === 'audio/wave' || file.name.endsWith('.wav')) return 'audio';
   return null;
 };
 
 export default function Encode() {
   const { isExpertMode } = useMode();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { state: wasmState, initialize: initWasm } = useWasmEngine();
   const isMobile = isMobileDevice();
 
@@ -119,7 +125,9 @@ export default function Encode() {
             setCapacity(prev => ({ ...prev, total: analysis.maxCapacityBytes }));
           }
         } catch (e) {
-          // Ignore errors during recalculation
+          if (import.meta.env.DEV) {
+            console.warn('[StegCrypt] Capacity recalculation error:', e);
+          }
         }
       })();
     }
@@ -131,12 +139,12 @@ export default function Encode() {
     try {
       if (type === 'image') {
         const imageData = await loadImage(file);
-        const analysis = analyzeImageCapacity(imageData, effectiveLsbDepth.depth);
+        const analysis = analyzeImageCapacity(imageData, parseInt(lsbDepth));
         setCapacity({ used: 0, total: analysis.maxCapacityBytes });
       } else { // This 'else' now covers audio
         const buffer = await file.arrayBuffer();
         const wavData = decodeWav(buffer);
-        const analysis = analyzeWavCapacity(wavData, effectiveLsbDepth.depth);
+        const analysis = analyzeWavCapacity(wavData, parseInt(lsbDepth));
         setCapacity({ used: 0, total: analysis.maxCapacityBytes });
       }
     } catch (error) {
@@ -146,12 +154,31 @@ export default function Encode() {
         description: 'Could not analyze the carrier file.',
       });
     }
-  }, [effectiveLsbDepth.depth, toast]);
+  }, [lsbDepth, toast]);
 
-  const handleCarrierSelect = useCallback((file: File | null) => {
+  const handleCarrierSelect = useCallback(async (file: File | null) => {
     setCarrierFile(file);
     if (file) {
       const type = detectCarrierType(file);
+      
+      // Additional check for WebP losslessness
+      if (file.type === 'image/webp' || file.name.toLowerCase().endsWith('.webp')) {
+        try {
+          const buffer = await file.arrayBuffer();
+          if (!isWebPLossless(buffer)) {
+            toast({
+              variant: 'destructive',
+              title: 'Lossy WebP Detected',
+              description: 'Only Lossless WebP is supported. Lossy compression destroys hidden data.',
+            });
+            setCarrierFile(null);
+            return;
+          }
+        } catch (e) {
+          console.error('WebP validation error:', e);
+        }
+      }
+
       setCarrierType(type);
       if (type) {
         analyzeCarrier(file, type);
@@ -159,7 +186,16 @@ export default function Encode() {
         toast({
           variant: 'destructive',
           title: 'Unsupported Format',
-          description: 'Please use PNG images or WAV audio files.',
+          description: 'Please use PNG, BMP, WebP (Lossless), or TIFF images, or WAV audio files.',
+          action: (
+            <ToastAction 
+              altText="Convert File" 
+              onClick={() => navigate('/tools')}
+              className="bauhaus-bg-red text-white border-2 border-[#121212] hover:bg-[#D02020]/90 px-3 uppercase text-xs font-bold"
+            >
+              Convert File
+            </ToastAction>
+          ),
         });
         setCarrierFile(null);
         setCapacity({ used: 0, total: 0 });
@@ -168,7 +204,7 @@ export default function Encode() {
       setCarrierType(null);
       setCapacity({ used: 0, total: 0 });
     }
-  }, [analyzeCarrier, toast]);
+  }, [analyzeCarrier, toast, navigate]);
 
   // Calculate used capacity based on payload
   useEffect(() => {
@@ -178,10 +214,6 @@ export default function Encode() {
     } else if (payloadFile) {
       payloadSize = payloadFile.size;
     }
-    // Add overhead if there's actual payload:
-    // Metadata: 1 byte version + 4 bytes meta len + ~50 bytes JSON = ~55 bytes
-    // Crypto: 1 byte flags + 4 bytes salt len + 16 bytes salt + 12 bytes IV + 16 bytes auth tag = 49 bytes
-    // Total overhead: ~105 bytes (rounded up for safety)
     const overhead = payloadSize > 0 ? 110 : 0;
     setCapacity(prev => ({ ...prev, used: payloadSize + overhead }));
   }, [payloadText, payloadFile]);
@@ -204,7 +236,7 @@ export default function Encode() {
       return;
     }
     if (password.length < 12) {
-      toast({ variant: 'destructive', title: 'Password must be at least 12 characters', description: 'Strong passwords are essential for security.' });
+      toast({ variant: 'destructive', title: 'Password too short', description: 'Minimum 12 characters required for secure encryption.' });
       return;
     }
 
@@ -212,53 +244,36 @@ export default function Encode() {
     setCompletedStages([]);
 
     try {
-      // Stage 1: Load
       setCurrentStage('load');
-
       let maxCapacity: number;
       let imageData: ImageData | null = null;
       let wavData: WavData | null = null;
 
       if (carrierType === 'image') {
         imageData = await loadImage(carrierFile);
-        const analysis = analyzeImageCapacity(imageData, effectiveLsbDepth.depth);
+        const analysis = analyzeImageCapacity(imageData, parseInt(lsbDepth));
         maxCapacity = analysis.maxCapacityBytes;
       } else {
         const buffer = await carrierFile.arrayBuffer();
         wavData = decodeWav(buffer);
-        const analysis = analyzeWavCapacity(wavData, effectiveLsbDepth.depth);
+        const analysis = analyzeWavCapacity(wavData, parseInt(lsbDepth));
         maxCapacity = analysis.maxCapacityBytes;
       }
       setCompletedStages(['load']);
 
-      // Stage 2: Analyze
       setCurrentStage('analyze');
-      await new Promise(r => setTimeout(r, 300)); // Visual feedback
+      await new Promise(r => setTimeout(r, 300));
       setCompletedStages(['load', 'analyze']);
 
-      // Stage 3: Encrypt
       setCurrentStage('encrypt');
-
       let payloadBuffer: ArrayBuffer;
       let metadata: import('@/lib/payload-helper').PayloadMetadata;
 
       if (payloadText) {
         payloadBuffer = stringToBuffer(payloadText);
-        metadata = {
-          type: 'text',
-          timestamp: Date.now()
-        };
+        metadata = { type: 'text', timestamp: Date.now() };
       } else {
-        // Handle potentially corrupted payload files
-        try {
-          payloadBuffer = await payloadFile!.arrayBuffer();
-          // Validate that we got data
-          if (!payloadBuffer || payloadBuffer.byteLength === 0) {
-            throw new Error('Empty payload file');
-          }
-        } catch (fileError) {
-          throw new Error('Failed to read payload file - file may be corrupted or inaccessible');
-        }
+        payloadBuffer = await payloadFile!.arrayBuffer();
         metadata = {
           type: 'file',
           name: payloadFile!.name,
@@ -268,353 +283,168 @@ export default function Encode() {
       }
 
       const packedPayload = packPayload(payloadBuffer, metadata);
-
-      const { promise: encryptPromise, cancel: cancelEncrypt } = encryptInWorker({
+      const { promise: encryptPromise } = encryptInWorker({
         payload: packedPayload,
         password,
         useArgon2: isExpertMode && useArgon2,
         compress: useCompression,
-        onProgress: (progress, stage, message) => {
-          // Optional: Update granular progress if needed
-        }
       });
 
-      // Store cancel function if needed (omitted for brevity, can be added to state)
-      const encrypted = await encryptPromise;
-
-      // Note: encryptInWorker now returns packed data directly!
-      // No need to call packEncryptedData separately if worker handles it.
-      // My worker implementation DOES pack it.
-      // So 'encrypted' IS 'packedData'.
-      const packedData = encrypted;
-
-      if (packedData.byteLength > maxCapacity) {
-        throw new Error('Payload too large for carrier');
-      }
+      const packedData = await encryptPromise;
+      if (packedData.byteLength > maxCapacity) throw new Error('Payload too large for carrier');
       setCompletedStages(['load', 'analyze', 'encrypt']);
 
-      // Stage 4: Embed
       setCurrentStage('embed');
       let blob: Blob;
       let extension: string;
 
       if (carrierType === 'image' && imageData) {
-        const result = embedData(imageData, packedData, effectiveLsbDepth.depth);
-
-        // Verify embedding worked by testing extraction immediately
-        const verifyImageData = new ImageData(
-          new Uint8ClampedArray(result.data),
-          result.width,
-          result.height
-        );
-        const verifyExtract = extractData(verifyImageData, effectiveLsbDepth.depth);
-        if (!verifyExtract) {
-          throw new Error('Embedding verification failed - data not extractable');
-        }
-
-        // Output in same format as input for maximum compatibility
-        // BMP is lossless, PNG is also lossless - both work fine
+        const result = embedData(imageData, packedData, parseInt(lsbDepth));
         const isBmp = carrierFile?.type === 'image/bmp' || carrierFile?.name.toLowerCase().endsWith('.bmp');
-        if (isBmp) {
-          blob = createBmpBlob(result);
-          extension = 'bmp';
-        } else {
-          blob = await createPngBlob(result);
-          extension = 'png';
-        }
+        blob = isBmp ? createBmpBlob(result) : await createPngBlob(result);
+        extension = isBmp ? 'bmp' : 'png';
       } else if (carrierType === 'audio' && wavData) {
-        const result = embedWavData(wavData, packedData, effectiveLsbDepth.depth);
-
-        // Verify embedding worked by testing extraction immediately
-        const verifyExtract = extractWavData(result, effectiveLsbDepth.depth);
-        if (!verifyExtract) {
-          throw new Error('Audio embedding verification failed - data not extractable');
-        }
-
+        const result = embedWavData(wavData, packedData, parseInt(lsbDepth));
         blob = encodeWav(result);
         extension = 'wav';
-      } else {
-        throw new Error('Invalid carrier type');
-      }
+      } else throw new Error('Invalid state');
+      
       setCompletedStages(['load', 'analyze', 'encrypt', 'embed']);
 
-      // Stage 5: Save
       setCurrentStage('save');
-
-      // Trigger download with clean filename
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      // Use original filename with simple prefix or just a generic name
       const originalName = carrierFile.name.replace(/\.[^/.]+$/, '');
-      a.download = `${originalName}_copy.${extension}`;
+      a.download = `${originalName}_steg.${extension}`;
       a.click();
       URL.revokeObjectURL(url);
-
       setCompletedStages(['load', 'analyze', 'encrypt', 'embed', 'save']);
 
-      toast({
-        title: 'Encoding Complete',
-        description: 'Your file has been downloaded.',
-      });
+      toast({ title: 'Encoding Complete', description: 'Your file has been downloaded.' });
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Encoding Failed',
-        description: error instanceof Error ? error.message : 'An error occurred',
-      });
+      toast({ variant: 'destructive', title: 'Encoding Failed', description: error instanceof Error ? error.message : 'An error occurred' });
     } finally {
       setIsProcessing(false);
       setCurrentStage(null);
     }
   };
 
+  const quickPasswordGen = () => {
+    const pwd = generateSecurePassword(16);
+    setPassword(pwd);
+    setConfirmPassword(pwd);
+    toast({ title: 'Password Generated', description: 'A secure 16-character password has been applied.' });
+  };
+
   const canEncode = carrierFile && carrierType && (payloadText || payloadFile) && password && password === confirmPassword;
 
   return (
-    <div className="container py-8 md:py-12 animate-fade-in overflow-x-hidden">
+    <div className="container py-8 md:py-12 animate-fade-in">
       <PageSEO
         title="Encode"
-        description="Hide encrypted data within images or audio files using LSB steganography. Secure AES-256 encryption with 100% local processing."
+        description="Hide encrypted data within images or audio files using LSB steganography."
         path="/encode"
       />
       <div className="max-w-4xl mx-auto">
-        {/* Mobile Warning */}
         {mobileWarning && (
-          <div className="mb-6 flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <div className="mb-6 flex items-center gap-2 p-4 border-[3px] border-[#F0C020] bg-[#F0C020]/15 text-[#121212] dark:text-[#F0C020] text-sm font-bold shadow-[3px_3px_0px_0px_#F0C020]">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 stroke-[3px]" />
             {mobileWarning}
           </div>
         )}
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 sm:gap-0">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-                <Lock className="h-5 w-5 text-primary-foreground" />
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter flex items-center gap-3">
+              <div className="h-10 w-10 bg-[#D02020] flex items-center justify-center border-[3px] border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]">
+                <Lock className="h-5 w-5 text-white" />
               </div>
               Encode
             </h1>
-            <p className="text-muted-foreground mt-2">
-              Hide encrypted data within a carrier file
-            </p>
+            <p className="text-muted-foreground mt-2 font-medium">Hide encrypted data within a carrier file</p>
           </div>
           <EngineStatus state={engineState} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Form */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Carrier File */}
             <div className="cyber-card">
-              <h2 className="font-semibold mb-4 flex items-center gap-2">
-                Carrier File
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p>The carrier file hides your data. Only lossless formats (PNG, WAV) preserve data integrity.</p>
-                  </TooltipContent>
-                </Tooltip>
-                {carrierType && (
-                  <Badge variant="secondary" className="ml-auto gap-1.5">
-                    {carrierType === 'image' ? <Image className="h-3 w-3" /> : <Music className="h-3 w-3" />}
-                    {carrierType === 'image' ? 'PNG Image' : 'WAV Audio'}
-                  </Badge>
-                )}
-              </h2>
-              <FileDropzone
-                accept="image/png,image/bmp,.bmp,audio/wav,audio/wave,.wav"
-                maxSize={(carrierType === 'audio'
-                  ? (isMobile ? FILE_LIMITS.mobile.audioCarrier : FILE_LIMITS.desktop.audioCarrier)
-                  : (isMobile ? FILE_LIMITS.mobile.imageCarrier : FILE_LIMITS.desktop.imageCarrier)) / (1024 * 1024)}
-                onFileSelect={handleCarrierSelect}
+              <h2 className="font-black mb-4 uppercase tracking-wide">Carrier File</h2>
+                <FileDropzone
+                  accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
+                  maxSize={100}
+                  onFileSelect={handleCarrierSelect}
                 selectedFile={carrierFile}
                 label="Select carrier file"
-                description={`PNG/BMP image (≤${isMobile ? '20' : '100'}MB) or WAV audio (≤${isMobile ? '20' : '200'}MB)`}
+                description="PNG/BMP/WebP/TIFF image or WAV audio"
               />
             </div>
 
-            {/* Payload */}
             <div className="cyber-card">
-              <h2 className="font-semibold mb-4">Payload</h2>
-
-              {!isExpertMode ? (
+              <h2 className="font-black mb-4 uppercase tracking-wide">Payload</h2>
+              <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="payload-text">Secret Message</Label>
+                  <Label htmlFor="payload-text" className="text-xs font-black uppercase tracking-wide">Message</Label>
                   <Textarea
                     id="payload-text"
-                    placeholder="Enter your secret message..."
+                    placeholder="Enter secret text..."
                     value={payloadText}
-                    onChange={(e) => setPayloadText(e.target.value)}
-                    className="min-h-[120px] font-mono"
+                    onChange={(e) => { setPayloadText(e.target.value); setPayloadFile(null); }}
+                    className="min-h-[120px] font-mono border-[2px] border-[#121212] dark:border-white"
                   />
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="payload-text">Text Payload</Label>
-                    <Textarea
-                      id="payload-text"
-                      placeholder="Enter text or use file below..."
-                      value={payloadText}
-                      onChange={(e) => {
-                        setPayloadText(e.target.value);
-                        setPayloadFile(null);
-                      }}
-                      className="min-h-[100px] font-mono"
-                      disabled={!!payloadFile}
-                    />
-                  </div>
-                  <div className="text-center text-sm text-muted-foreground">or</div>
+                {isExpertMode && (
                   <FileDropzone
                     accept="*/*"
-                    maxSize={isMobile ? FILE_LIMITS.mobile.payload / (1024 * 1024) : FILE_LIMITS.desktop.payload / (1024 * 1024)}
-                    onFileSelect={(file) => {
-                      setPayloadFile(file);
-                      if (file) setPayloadText('');
-                    }}
+                    maxSize={50}
+                    onFileSelect={(file) => { setPayloadFile(file); if (file) setPayloadText(''); }}
                     selectedFile={payloadFile}
-                    label="Payload file"
-                    description="Any file type"
+                    label="Or upload a file"
                   />
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
-            {/* Encryption */}
             <div className="cyber-card">
-              <h2 className="font-semibold mb-4 flex items-center gap-2">
-                Encryption
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-xs">
-                    <p>Uses AES-256-GCM encryption with PBKDF2 key derivation (100,000 iterations).</p>
-                  </TooltipContent>
-                </Tooltip>
-              </h2>
-
+              <div className="flex items-start justify-between mb-4">
+                <h2 className="font-black uppercase tracking-wide">Encryption</h2>
+                <PasswordGenerator onUsePassword={(pwd) => { setPassword(pwd); setConfirmPassword(pwd); }} />
+              </div>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Min 12 characters"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+                  <Label htmlFor="password" className="text-xs font-black uppercase tracking-wide">Password</Label>
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="Confirm password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                  />
+                  <Label htmlFor="confirm-password" className="text-xs font-black uppercase tracking-wide">Confirm</Label>
+                  <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
                 </div>
               </div>
-
-              {password && confirmPassword && password !== confirmPassword && (
-                <div className="mt-3 flex items-center gap-2 text-destructive text-sm">
-                  <AlertTriangle className="h-4 w-4" />
-                  Passwords do not match
-                </div>
-              )}
             </div>
-
-            {/* Expert Options - Only shown in Expert Mode */}
-            {isExpertMode && (
-              <div className="cyber-card border-warning/30 bg-warning/5">
-                <h2 className="font-semibold mb-4 flex items-center gap-2 text-warning">
-                  <AlertTriangle className="h-4 w-4" />
-                  Expert Options
-                </h2>
-
-                <div className="space-y-4">
-                  {!isMobile && (
-                    <div className="space-y-2">
-                      <Label htmlFor="lsb-depth">LSB Depth</Label>
-                      <Select value={lsbDepth} onValueChange={setLsbDepth}>
-                        <SelectTrigger id="lsb-depth">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 bit (Most secure)</SelectItem>
-                          <SelectItem value="2">2 bits</SelectItem>
-                          <SelectItem value="3">3 bits</SelectItem>
-                          <SelectItem value="4">4 bits (Highest capacity)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        Higher depth = more capacity but more detectable
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="high-security-mode">High Security Mode</Label>
-                      <p className="text-xs text-muted-foreground">
-                        310K PBKDF2 iterations (3x slower, stronger)
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="high-security-mode"
-                        checked={useArgon2}
-                        onChange={(e) => setUseArgon2(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Capacity */}
-            <div className="cyber-card">
-              <h3 className="font-semibold mb-4">Safety & Capacity</h3>
+            <div className="cyber-card shadow-[6px_6px_0px_0px_#1040C0] dark:shadow-[6px_6px_0px_0px_#1040C0]">
+              <h3 className="font-bold mb-4 uppercase tracking-wide">Capacity</h3>
               <CapacityIndicator used={capacity.used} total={capacity.total} />
             </div>
 
-            {/* Progress */}
             {isProcessing && (
               <div className="cyber-card">
-                <h3 className="font-semibold mb-4">Progress</h3>
-                <ProcessingStages
-                  currentStage={currentStage}
-                  completedStages={completedStages}
-                  mode="encode"
-                />
+                <ProcessingStages currentStage={currentStage} completedStages={completedStages} mode="encode" />
               </div>
             )}
 
-            {/* Encode Button */}
-            <Button
-              size="lg"
-              className="w-full gap-2"
-              disabled={!canEncode || isProcessing}
-              onClick={handleEncode}
-            >
-              {isProcessing ? (
-                <>Processing...</>
-              ) : (
-                <>
-                  <Lock className="h-4 w-4" />
-                  Encode & Download
-                </>
-              )}
-            </Button>
+            <div className="pt-4">
+              <Button
+                size="lg"
+                className="w-full gap-2 min-h-[3.5rem] py-3 text-base font-black uppercase tracking-[0.15em] bauhaus-bg-red border-[3px] border-[#121212] dark:border-white shadow-[8px_8px_0px_0px_#121212] dark:shadow-[8px_8px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:grayscale"
+                disabled={!canEncode || isProcessing}
+                onClick={handleEncode}
+              >
+                {isProcessing ? <>Processing…</> : <><Lock className="h-5 w-5 stroke-[3px] flex-shrink-0" /><span>Encode &amp; Download</span></>}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

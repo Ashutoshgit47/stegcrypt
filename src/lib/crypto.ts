@@ -1,6 +1,8 @@
 // Web Crypto API wrapper for StegCrypt
 // This module handles all cryptographic operations
 
+import { KDF_SETTINGS } from './constants';
+
 export interface EncryptionResult {
   ciphertext: ArrayBuffer;
   iv: Uint8Array;
@@ -15,7 +17,7 @@ export interface DecryptionResult {
 async function deriveKey(
   password: string,
   salt: Uint8Array,
-  iterations: number = 100000
+  iterations: number = KDF_SETTINGS.pbkdf2.iterations
 ): Promise<CryptoKey> {
   const encoder = new TextEncoder();
   const passwordBuffer = encoder.encode(password);
@@ -147,3 +149,29 @@ export function unpackEncryptedData(packed: ArrayBuffer): {
 
   return { ciphertext, iv, salt };
 }
+
+export function generateSecurePassword(length = 24): string {
+  const lower = 'abcdefghijkmnpqrstuvwxyz';
+  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const digits = '23456789';
+  const symbols = '!@#$%^&*-_=+';
+  const all = lower + upper + digits + symbols;
+  const arr = new Uint32Array(length);
+  crypto.getRandomValues(arr);
+  const guaranteed = [
+    lower[arr[0] % lower.length],
+    upper[arr[1] % upper.length],
+    digits[arr[2] % digits.length],
+    symbols[arr[3] % symbols.length],
+  ];
+  const rest = Array.from({ length: length - 4 }, (_, i) => all[arr[i + 4] % all.length]);
+  const combined = [...guaranteed, ...rest];
+  const shuffleArr = new Uint32Array(combined.length);
+  crypto.getRandomValues(shuffleArr);
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = shuffleArr[i] % (i + 1);
+    [combined[i], combined[j]] = [combined[j], combined[i]];
+  }
+  return combined.join('');
+}
+

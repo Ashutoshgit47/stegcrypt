@@ -1,44 +1,30 @@
-import { Github, Shield, Code, Lock, Zap, Heart, ExternalLink, Image, Music, FileKey } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Shield, Code, Lock, Zap, Heart, ExternalLink, Image, FileKey } from 'lucide-react';
+import { GithubIcon as Github } from '@/components/shared/GithubIcon';
 import { PageSEO } from '@/components/PageSEO';
 
+// Color cycle: Red → Blue → Yellow → Red ...
+const COLORS = [
+  { bg: 'bg-[#D02020]', text: 'text-white', border: 'border-[#D02020]', shadow: 'shadow-[4px_4px_0px_0px_#D02020]' },
+  { bg: 'bg-[#1040C0]', text: 'text-white', border: 'border-[#1040C0]', shadow: 'shadow-[4px_4px_0px_0px_#1040C0]' },
+  { bg: 'bg-[#F0C020]', text: 'text-[#121212]', border: 'border-[#F0C020]', shadow: 'shadow-[4px_4px_0px_0px_#F0C020]' },
+];
+
 const features = [
-  {
-    icon: Lock,
-    title: 'AES-256-GCM + PBKDF2',
-    description: 'Military-grade encryption with 100K-310K iterations',
-  },
-  {
-    icon: Shield,
-    title: '100% Local Processing',
-    description: 'All data stays on your device, zero uploads',
-  },
-  {
-    icon: Image,
-    title: 'Multi-Format Support',
-    description: 'PNG, BMP images and WAV audio carriers',
-  },
-  {
-    icon: FileKey,
-    title: 'File Metadata Preservation',
-    description: 'Original filenames and types are restored',
-  },
-  {
-    icon: Zap,
-    title: 'Large File Support',
-    description: 'Up to 100MB images, 200MB audio carriers',
-  },
-  {
-    icon: Code,
-    title: 'Binary-Safe Processing',
-    description: 'Pure JS codecs bypass browser interference',
-  },
+  { icon: Lock,    title: 'AES-256-GCM + PBKDF2',   description: 'Military-grade encryption with PBKDF2 key derivation (100K–310K iterations)' },
+  { icon: Shield,  title: '100% Local Processing',   description: 'All data stays on your device — zero uploads, zero telemetry' },
+  { icon: Image,   title: 'Multi-Format Support',    description: 'PNG, BMP, WebP (lossless), TIFF images, and WAV audio carriers' },
+  { icon: FileKey, title: 'Dual Cryptography Modes', description: 'Steganography mode hides data in files; cryptography mode encrypts directly' },
+  { icon: Zap,     title: 'Password Generator',      description: 'Built-in cryptographically secure password generator with entropy meter' },
+  { icon: Code,    title: 'Binary-Safe Processing',  description: 'Pure JS codecs and a /tools page with hash, Base64, and hex utilities' },
 ];
 
 const techStack = [
-  'React', 'TypeScript', 'Tailwind CSS', 'Web Crypto API', 'Web Workers', 'Vite'
+  { label: 'React',         color: COLORS[0] },
+  { label: 'TypeScript',    color: COLORS[1] },
+  { label: 'Tailwind CSS',  color: COLORS[2] },
+  { label: 'Web Crypto API',color: COLORS[0] },
+  { label: 'Web Workers',   color: COLORS[1] },
+  { label: 'Vite',          color: COLORS[2] },
 ];
 
 export default function About() {
@@ -49,113 +35,138 @@ export default function About() {
         description="Learn about StegCrypt - a privacy-first steganography and cryptography tool for hiding encrypted messages in images and audio. Built by Ashutosh Gautam with security and transparency in mind."
         path="/about"
       />
-      {/* Hero Section */}
+
+      {/* Hero */}
       <section className="text-center space-y-6 max-w-3xl mx-auto">
-        <div className="inline-flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 animate-scale-in">
-          <Shield className="h-16 w-16 text-primary" />
+        {/* Three overlapping icon blocks */}
+        <div className="flex items-center justify-center gap-0 relative h-24">
+          <div className="h-16 w-16 flex items-center justify-center bg-[#D02020] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] -rotate-6 z-10 relative -mr-4">
+            <Lock className="h-8 w-8 text-white stroke-[3px]" />
+          </div>
+          <div className="h-20 w-20 flex items-center justify-center bg-[#F0C020] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] z-20 relative">
+            <Shield className="h-10 w-10 text-[#121212] stroke-[3px]" />
+          </div>
+          <div className="h-16 w-16 flex items-center justify-center bg-[#1040C0] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] rotate-6 z-10 relative -ml-4">
+            <Code className="h-8 w-8 text-white stroke-[3px]" />
+          </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-          About <span className="text-primary">StegCrypt</span>
+
+        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tight">
+          About{' '}
+          <span className="bg-[#D02020] text-white px-2">Steg</span>
+          <span className="bg-[#1040C0] text-white px-2">Crypt</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        <p className="text-lg font-bold opacity-80 max-w-2xl mx-auto leading-relaxed">
           A powerful, privacy-first <strong>steganography and cryptography</strong> tool.
-          Encrypt your data with AES-256-GCM, then hide it within images and audio files.
-          Built with security and simplicity in mind.
+          Encrypt data with AES-256-GCM and hide it within images or audio files — or encrypt directly
+          without a carrier using the dedicated Cryptography mode.
         </p>
+        {/* Hero mini-stats */}
+        <div className="flex flex-wrap justify-center gap-3">
+          {[
+            { label: 'AES-256-GCM', bg: 'bg-[#D02020]', text: 'text-white' },
+            { label: '100% Local', bg: 'bg-[#1040C0]', text: 'text-white' },
+            { label: 'Open Source', bg: 'bg-[#F0C020]', text: 'text-[#121212]' },
+          ].map((s) => (
+            <span key={s.label} className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest border-[3px] border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white] ${s.bg} ${s.text}`}>
+              {s.label}
+            </span>
+          ))}
+        </div>
       </section>
 
       {/* Features Grid */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {features.map((feature, index) => {
-          const Icon = feature.icon;
+        {features.map((f, i) => {
+          const Icon = f.icon;
+          const c = COLORS[i % 3];
           return (
-            <Card
-              key={feature.title}
-              className="group hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
-              style={{ animationDelay: `${index * 100}ms` }}
+            <div
+              key={f.title}
+              className={`border-[3px] border-[#121212] dark:border-white ${c.shadow} hover:-translate-y-1 hover:shadow-none transition-all p-5 bg-white dark:bg-[#121212]`}
             >
-              <CardHeader className="pb-2">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
-                  <Icon className="h-6 w-6 text-primary" />
-                </div>
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </CardContent>
-            </Card>
+              <div className={`h-11 w-11 flex items-center justify-center border-[3px] border-[#121212] dark:border-white mb-4 ${c.bg} ${c.text}`}>
+                <Icon className="h-5 w-5 stroke-[3px]" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-wide mb-2">{f.title}</h3>
+              <p className="text-sm font-medium opacity-70">{f.description}</p>
+            </div>
           );
         })}
       </section>
 
       {/* Developer Section */}
       <section className="max-w-2xl mx-auto">
-        <Card className="overflow-hidden">
-          <div className="h-2 bg-gradient-to-r from-primary to-accent" />
-          <CardHeader className="text-center pt-8">
-            <div className="mx-auto mb-4 relative">
-              <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary to-accent p-1">
-                <div className="h-full w-full rounded-full bg-card flex items-center justify-center">
-                  <Code className="h-10 w-10 text-primary" />
-                </div>
-              </div>
-              <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-success flex items-center justify-center border-4 border-card">
-                <Shield className="h-4 w-4 text-success-foreground" />
-              </div>
+        <div className="border-[3px] border-[#121212] dark:border-white shadow-[6px_6px_0px_0px_#121212] dark:shadow-[6px_6px_0px_0px_white] bg-white dark:bg-[#121212]">
+          {/* Tri-color top bar */}
+          <div className="h-3 flex">
+            <div className="flex-1 bg-[#D02020]" />
+            <div className="flex-1 bg-[#F0C020]" />
+            <div className="flex-1 bg-[#1040C0]" />
+          </div>
+          <div className="p-8 text-center space-y-6">
+            {/* Avatar */}
+            <div className="mx-auto h-24 w-24 flex items-center justify-center bg-[#F0C020] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#D02020]">
+              <Code className="h-12 w-12 text-[#121212] stroke-[3px]" />
             </div>
-            <CardTitle className="text-2xl">Ashutosh Gautam</CardTitle>
-            <p className="text-muted-foreground">Cybersecurity Enthusiast & Developer</p>
-          </CardHeader>
-          <CardContent className="text-center space-y-6 pb-8">
-            <p className="text-muted-foreground max-w-md mx-auto">
+            <div>
+              <h2 className="text-2xl font-black uppercase tracking-wide">Ashutosh Gautam</h2>
+              <p className="text-sm font-bold uppercase tracking-widest opacity-60 mt-1">Cybersecurity Enthusiast & Developer</p>
+            </div>
+            <p className="font-medium opacity-80 max-w-md mx-auto">
               Passionate about building secure, privacy-focused tools that empower users
               to protect their digital communications.
             </p>
 
+            {/* Tech Stack — cycling colors */}
             <div className="flex flex-wrap justify-center gap-2">
               {techStack.map((tech) => (
-                <Badge key={tech} variant="secondary" className="px-3 py-1">
-                  {tech}
-                </Badge>
+                <span
+                  key={tech.label}
+                  className={`px-3 py-1 text-xs font-black uppercase tracking-widest border-[2px] border-[#121212] dark:border-white shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white] ${tech.color.bg} ${tech.color.text}`}
+                >
+                  {tech.label}
+                </span>
               ))}
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-              <Button asChild className="gap-2 group">
-                <a
-                  href="https://github.com/Ashutoshgit47/Ashutoshgit47"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Github className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  GitHub Profile
-                  <ExternalLink className="h-3 w-3 opacity-50" />
-                </a>
-              </Button>
-              <Button asChild variant="outline" className="gap-2 group">
-                <a
-                  href="https://github.com/Ashutoshgit47/stegcrypt"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Code className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  Project Repository
-                  <ExternalLink className="h-3 w-3 opacity-50" />
-                </a>
-              </Button>
+            {/* CTAs */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <a
+                href="https://github.com/Ashutoshgit47/Ashutoshgit47"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 border-[3px] border-[#121212] dark:border-white bg-[#121212] dark:bg-white text-white dark:text-[#121212] shadow-[4px_4px_0px_0px_#D02020] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all font-black uppercase tracking-widest text-xs"
+              >
+                <Github className="h-4 w-4" />
+                GitHub Profile
+                <ExternalLink className="h-3 w-3 opacity-50" />
+              </a>
+              <a
+                href="https://github.com/Ashutoshgit47/stegcrypt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 px-5 py-2.5 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all font-black uppercase tracking-widest text-xs"
+              >
+                <Code className="h-4 w-4" />
+                Project Repo
+                <ExternalLink className="h-3 w-3 opacity-50" />
+              </a>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </section>
 
       {/* Footer Note */}
-      <section className="text-center space-y-4 pb-8">
-        <div className="flex items-center justify-center gap-2 text-muted-foreground">
-          <span>Built with</span>
-          <Heart className="h-4 w-4 text-destructive animate-pulse" />
-          <span>for privacy advocates</span>
+      <section className="text-center pb-8">
+        <div className="inline-flex items-center gap-0 border-[3px] border-[#121212] dark:border-white shadow-[6px_6px_0px_0px_#121212] dark:shadow-[6px_6px_0px_0px_white] font-black uppercase tracking-widest text-sm overflow-hidden animate-bounce-slow">
+          <span className="px-4 py-3 bg-[#D02020] text-white">Built with</span>
+          <span className="px-3 py-3 bg-[#F0C020] text-[#121212] flex items-center">
+            <Heart className="h-4 w-4 fill-[#D02020] stroke-[#D02020] stroke-[3px]" />
+          </span>
+          <span className="px-4 py-3 bg-[#1040C0] text-white">for privacy advocates</span>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm font-medium opacity-60 mt-4">
           StegCrypt is open source and free to use. Contributions welcome!
         </p>
       </section>

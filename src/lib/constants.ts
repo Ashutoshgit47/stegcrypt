@@ -18,8 +18,8 @@ export const FILE_LIMITS = {
 // Supported file formats
 export const SUPPORTED_FORMATS = {
     imageCarriers: {
-        supported: ['image/png', 'image/bmp'],
-        extensions: ['.png', '.bmp'],
+        supported: ['image/png', 'image/bmp', 'image/webp', 'image/tiff'],
+        extensions: ['.png', '.bmp', '.webp', '.tiff', '.tif'],
         recommended: 'PNG',
     },
     audioCarriers: {
@@ -29,11 +29,10 @@ export const SUPPORTED_FORMATS = {
     },
     // Formats explicitly NOT supported
     unsupported: {
-        images: ['image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif', 'image/gif'],
+        images: ['image/jpeg', 'image/jpg', 'image/heic', 'image/heif', 'image/gif'],
         audio: ['audio/mpeg', 'audio/mp3', 'audio/aac', 'audio/ogg'],
         reasons: {
             'image/jpeg': 'JPEG uses lossy compression which destroys hidden data',
-            'image/webp': 'WebP uses lossy compression which destroys hidden data',
             'image/heic': 'HEIC uses lossy compression which destroys hidden data',
             'image/gif': 'GIF has limited color depth unsuitable for steganography',
             'audio/mpeg': 'MP3 uses lossy compression which destroys hidden data',
@@ -84,7 +83,7 @@ export const WARNING_MESSAGES = {
 // KDF settings
 export const KDF_SETTINGS = {
     pbkdf2: {
-        iterations: 100000,
+        iterations: 310000,
         hash: 'SHA-256',
     },
     argon2: {

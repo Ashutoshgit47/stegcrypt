@@ -46,61 +46,57 @@ export function ModeSelector() {
       {modes.map((m) => {
         const Icon = m.icon;
         const isSelected = mode === m.id;
-        const colorClasses = m.color === 'success'
-          ? 'border-success/50 bg-success/5'
-          : 'border-warning/50 bg-warning/5';
-        const selectedClasses = isSelected
-          ? m.color === 'success'
-            ? 'border-success ring-2 ring-success/20'
-            : 'border-warning ring-2 ring-warning/20'
-          : '';
-
+        
+        // Strict Bauhaus Styling Overrides
+        const colorMain = m.color === 'success' ? '#1040C0' : '#F0C020';
+        const activeBorderClass = m.color === 'success' 
+          ? 'border-[#1040C0] shadow-[6px_6px_0px_0px_#1040C0] dark:shadow-[6px_6px_0px_0px_#1040C0]'
+          : 'border-[#F0C020] shadow-[6px_6px_0px_0px_#F0C020] dark:shadow-[6px_6px_0px_0px_#F0C020]';
+          
         return (
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
             className={cn(
-              'relative text-left p-4 md:p-6 rounded-xl border-2 transition-all duration-200 h-full flex flex-col',
-              'hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary/20',
-              isSelected ? selectedClasses : 'border-border hover:border-muted-foreground/30',
-              isSelected && colorClasses
+              'relative text-left p-6 border-[3px] transition-all duration-150 flex flex-col items-start bg-[#F0F0F0] dark:bg-[#121212] group',
+              isSelected ? activeBorderClass : 'border-[#121212] dark:border-white hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_#121212] dark:hover:shadow-[4px_4px_0px_0px_white]'
             )}
           >
             {/* Selection indicator */}
             {isSelected && (
-              <div className={cn(
-                'absolute top-4 right-4 h-6 w-6 rounded-full flex items-center justify-center',
-                m.color === 'success' ? 'bg-success' : 'bg-warning'
-              )}>
-                <Check className="h-4 w-4 text-primary-foreground" />
+              <div 
+                className="absolute top-4 right-4 h-6 w-6 flex items-center justify-center border-2 border-[#121212] dark:border-[#121212]"
+                style={{ backgroundColor: colorMain }}
+              >
+                <Check className={cn("h-4 w-4", m.color === 'success' ? 'text-white' : 'text-[#121212]')} />
               </div>
             )}
 
             {/* Header */}
-            <div className="flex items-start gap-4 mb-4">
-              <div className={cn(
-                'h-12 w-12 rounded-lg flex items-center justify-center',
-                m.color === 'success' ? 'bg-success/10' : 'bg-warning/10'
-              )}>
+            <div className="flex items-start gap-4 mb-6">
+              <div 
+                className="h-12 w-12 flex flex-shrink-0 items-center justify-center border-2 border-[#121212] shadow-[2px_2px_0px_0px_#121212] dark:border-white dark:shadow-[2px_2px_0px_0px_white]"
+                style={{ backgroundColor: isSelected ? colorMain : 'transparent' }}
+              >
                 <Icon className={cn(
                   'h-6 w-6',
-                  m.color === 'success' ? 'text-success' : 'text-warning'
+                  isSelected ? (m.color === 'success' ? 'text-white' : 'text-[#121212]') : 'text-[#121212] dark:text-white'
                 )} />
               </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold mb-1">{m.title}</h3>
-                <p className="text-sm text-muted-foreground">{m.description}</p>
+              <div className="flex-1 pt-1 text-[#121212] dark:text-white">
+                <h3 className="text-xl font-black uppercase tracking-wide leading-tight mb-1">{m.title}</h3>
+                <p className="text-sm font-medium opacity-80">{m.description}</p>
               </div>
             </div>
 
             {/* Features */}
-            <ul className="space-y-2 flex-grow">
+            <ul className="space-y-3 flex-grow text-[#121212] dark:text-white mb-4">
               {m.features.map((feature, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className={cn(
-                    'h-1.5 w-1.5 rounded-full flex-shrink-0',
-                    m.color === 'success' ? 'bg-success' : 'bg-warning'
-                  )} />
+                <li key={i} className="flex items-center gap-3 text-sm font-semibold">
+                  <div 
+                    className="h-3 w-3 flex-shrink-0 border-2 border-[#121212] dark:border-white"
+                    style={{ backgroundColor: colorMain }}
+                  />
                   {feature}
                 </li>
               ))}
@@ -108,9 +104,9 @@ export function ModeSelector() {
 
             {/* Expert warning */}
             {m.id === 'expert' && (
-              <div className="mt-4 flex items-start gap-2 p-3 rounded-lg bg-warning/10 text-warning text-xs">
-                <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span>Expert mode requires understanding of steganography concepts and security implications.</span>
+              <div className="mt-2 w-full flex items-start gap-3 p-3 border-2 border-[#121212] bg-[#F0C020] text-[#121212]">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-xs font-bold uppercase tracking-wide">Expert mode requires understanding of steganography concepts and security implications.</span>
               </div>
             )}
           </button>

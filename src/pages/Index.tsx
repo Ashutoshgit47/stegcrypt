@@ -1,30 +1,56 @@
 import { Link } from 'react-router-dom';
-import { Lock, Unlock, Shield, ArrowRight, Fingerprint, Cpu, Eye } from 'lucide-react';
+import {
+  Lock,
+  Unlock,
+  Shield,
+  ArrowRight,
+  Image as ImageIcon,
+  Zap,
+  Code,
+  FileLock2
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ModeSelector } from '@/components/home/ModeSelector';
 import { PageSEO } from '@/components/PageSEO';
 import { useMode } from '@/contexts/ModeContext';
+import { ParticleBackground } from '@/components/shared/ParticleBackground';
 
 const features = [
   {
+    icon: Lock,
+    title: 'AES-256-GCM + PBKDF2',
+    description: 'Military-grade encryption with PBKDF2 key derivation (100K–310K iterations)',
+    color: 'red'
+  },
+  {
     icon: Shield,
     title: '100% Local Processing',
-    description: 'All encryption and embedding happens in your browser. No data ever leaves your device.',
+    description: 'All data stays on your device — zero uploads, zero telemetry',
+    color: 'blue'
   },
   {
-    icon: Fingerprint,
-    title: 'Military-Grade Encryption',
-    description: 'AES-256-GCM encryption with PBKDF2 key derivation protects your hidden messages.',
+    icon: ImageIcon,
+    title: 'Multi-Format Support',
+    description: 'PNG, BMP, WebP (lossless), TIFF images, and WAV audio carriers',
+    color: 'yellow'
   },
   {
-    icon: Cpu,
-    title: 'WebAssembly Ready',
-    description: 'Architecture prepared for high-performance WASM modules when you need them.',
+    icon: FileLock2,
+    title: 'Dual Cryptography Modes',
+    description: 'Steganography mode hides data in files; cryptography mode encrypts directly',
+    color: 'red'
   },
   {
-    icon: Eye,
-    title: 'Undetectable Embedding',
-    description: 'LSB steganography hides data in image pixels without visible changes.',
+    icon: Zap,
+    title: 'Password Generator',
+    description: 'Built-in cryptographically secure password generator with entropy meter',
+    color: 'blue'
+  },
+  {
+    icon: Code,
+    title: 'Binary-Safe Processing',
+    description: 'Pure JS codecs and a /tools page with hash, Base64, and hex utilities',
+    color: 'yellow'
   },
 ];
 
@@ -39,38 +65,48 @@ export default function Index() {
         path="/"
       />
       {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      <section className="relative overflow-hidden border-b-[3px] border-[#121212] dark:border-white">
+
+        {/* ── Dynamic Bauhaus Particles (Dust/Sand Effect) ───────── */}
+        <ParticleBackground />
+        {/* ─────────────────────────────────────────────────────── */}
+        {/* ─────────────────────────────────────────────────────── */}
+
         <div className="container relative py-16 md:py-24">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-              <Shield className="h-4 w-4" />
+
+            {/* Pill badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white text-xs font-black uppercase tracking-widest shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]">
+              <Shield className="h-4 w-4 stroke-[3px]" />
               Browser-Based Steganography
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight">
               Hide Secrets in
-              <span className="text-primary"> Plain Sight</span>
+              <span className="bg-[#D02020] text-white px-2"> Plain</span>
+              <span className="bg-[#F0C020] text-[#121212] px-2">Sight</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl font-bold opacity-80 max-w-2xl mx-auto">
               Encrypt and embed confidential data within ordinary images.
               All processing happens locally — your secrets never leave your device.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-              <Button asChild size="lg" className="gap-2 min-w-[160px]">
-                <Link to="/encode">
-                  <Lock className="h-4 w-4" />
-                  Encode
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2 min-w-[160px]">
-                <Link to="/decode">
-                  <Unlock className="h-4 w-4" />
-                  Decode
-                </Link>
-              </Button>
+              <Link
+                to="/encode"
+                className="flex items-center gap-2 px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#D02020] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
+              >
+                <Lock className="h-4 w-4 stroke-[3px]" />
+                Encode
+              </Link>
+              <Link
+                to="/decode"
+                className="flex items-center gap-2 px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
+              >
+                <Unlock className="h-4 w-4 stroke-[3px]" />
+                Decode
+              </Link>
             </div>
           </div>
         </div>
@@ -89,10 +125,10 @@ export default function Index() {
           <ModeSelector />
 
           <div className="text-center mt-8">
-            <Button asChild variant="default" size="lg" className="gap-2">
+            <Button asChild variant="default" size="lg" className="gap-2 border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_black] dark:shadow-[4px_4px_0px_0px_white] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all font-black uppercase tracking-widest bg-[#1040C0] text-white">
               <Link to="/encode">
                 Continue to Encode
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-5 w-5 stroke-[3px]" />
               </Link>
             </Button>
           </div>
@@ -100,28 +136,45 @@ export default function Index() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16 md:py-20 bg-muted/30 border-y border-border">
+      <section className="py-16 md:py-20 border-y-[3px] border-[#121212] dark:border-white">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">Security First</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-wide mb-3">
+              <span className="bg-[#F0C020] text-[#121212] px-2">Security</span> First
+            </h2>
+            <p className="font-bold opacity-70 max-w-xl mx-auto">
               Built with the highest security standards. No compromises.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature) => {
               const Icon = feature.icon;
+              const shadowColor =
+                feature.color === 'red' ? '#D02020' :
+                feature.color === 'blue' ? '#1040C0' : '#F0C020';
+
+              const iconBg =
+                feature.color === 'red' ? 'bg-[#D02020] text-white' :
+                feature.color === 'blue' ? 'bg-[#1040C0] text-white' : 'bg-[#F0C020] text-[#121212]';
+
               return (
                 <div
                   key={feature.title}
-                  className="cyber-card group hover:border-primary/30"
+                  className="p-8 border-[3px] border-[#121212] dark:border-white bg-card relative group hover:-translate-x-1 hover:-translate-y-1 transition-all duration-300"
+                  style={{
+                    boxShadow: `6px 6px 0px 0px ${shadowColor}`,
+                  }}
                 >
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Icon className="h-6 w-6 text-primary" />
+                  <div className={`h-12 w-12 flex items-center justify-center mb-6 border-[3px] border-[#121212] dark:border-white group-hover:-rotate-6 transition-transform ${iconBg} shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]`}>
+                    <Icon className="h-6 w-6 stroke-[3px]" />
                   </div>
-                  <h3 className="font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <h3 className="text-xl font-black uppercase tracking-wider mb-3 leading-tight">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm font-bold opacity-70 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
               );
             })}
@@ -133,24 +186,26 @@ export default function Index() {
       <section className="py-16 md:py-20">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3">How It Works</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-black uppercase tracking-wide mb-3">
+              How It <span className="bg-[#1040C0] text-white px-2">Works</span>
+            </h2>
+            <p className="font-bold opacity-70 max-w-xl mx-auto">
               Three simple steps to hide your secrets
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { step: 1, title: 'Select Carrier', desc: 'Choose a PNG, BMP or WAV file to hide your data in' },
-              { step: 2, title: 'Add Payload', desc: 'Enter your secret message or select a file to hide' },
-              { step: 3, title: 'Download', desc: 'Get your file with the hidden encrypted data' },
+              { step: 1, title: 'Select Carrier', desc: 'Choose a PNG, BMP or WAV file to hide your data in', bg: 'bg-[#D02020]', text: 'text-white', shadow: 'shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white]' },
+              { step: 2, title: 'Add Payload', desc: 'Enter your secret message or select a file to hide', bg: 'bg-[#F0C020]', text: 'text-[#121212]', shadow: 'shadow-[4px_4px_0px_0px_#D02020]' },
+              { step: 3, title: 'Download', desc: 'Get your file with the hidden encrypted data', bg: 'bg-[#1040C0]', text: 'text-white', shadow: 'shadow-[4px_4px_0px_0px_#F0C020]' },
             ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="h-14 w-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold mx-auto mb-4">
+              <div key={item.step} className="text-center group">
+                <div className={`h-16 w-16 border-[3px] border-[#121212] dark:border-white ${item.shadow} ${item.bg} ${item.text} flex items-center justify-center text-2xl font-black mx-auto mb-6 group-hover:translate-x-[4px] group-hover:translate-y-[4px] group-hover:shadow-none transition-all`}>
                   {item.step}
                 </div>
-                <h3 className="font-semibold mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                <h3 className="font-black uppercase tracking-wider mb-2">{item.title}</h3>
+                <p className="text-sm opacity-80">{item.desc}</p>
               </div>
             ))}
           </div>

@@ -1,5 +1,5 @@
 // Steganography utilities for StegCrypt
-// LSB (Least Significant Bit) embedding for PNG images
+// LSB (Least Significant Bit) embedding for images and audio
 
 import { encodePNG, decodePNG } from './png-encoder';
 import { encodeBMP, decodeBMP } from './bmp-codec';
@@ -50,11 +50,8 @@ export function embedData(
   lsbDepth: number = 1
 ): EmbedResult {
   const { width, height } = imageData;
-  // Create a copy of the pixel data
   const pixels = new Uint8ClampedArray(imageData.data.length);
-  for (let i = 0; i < imageData.data.length; i++) {
-    pixels[i] = imageData.data[i];
-  }
+  pixels.set(imageData.data);
 
   const payloadBytes = new Uint8Array(payload);
 
@@ -141,25 +138,25 @@ export function extractData(
     return null;
   }
 
-  // Extract bits from pixels
-  const extractedBits: number[] = [];
+  // Extract bits from pixels (pre-allocate for performance)
+  const extractedBits = new Uint8Array(maxBits);
+  let bitIndex = 0;
 
   for (let pixelOffset = 0; pixelOffset < pixels.length; pixelOffset += 4) {
-    // Extract from R, G, B channels
     for (let channel = 0; channel < 3; channel++) {
       const idx = pixelOffset + channel;
       const pixelValue = pixels[idx];
-
-      // Extract LSB bits
       for (let bit = lsbDepth - 1; bit >= 0; bit--) {
-        extractedBits.push((pixelValue >> bit) & 1);
+        extractedBits[bitIndex++] = (pixelValue >> bit) & 1;
       }
     }
   }
 
   // Convert first 32 bits (4 bytes) to magic header
-  if (extractedBits.length < 64) {
-    console.warn('[StegCrypt] Not enough bits for header:', extractedBits.length);
+  if (bitIndex < 64) {
+    if (import.meta.env.DEV) {
+      console.warn('[StegCrypt] Not enough bits for header:', bitIndex);
+    }
     return null;
   }
 
@@ -173,13 +170,16 @@ export function extractData(
     extractedMagic[byteIdx] = byte;
   }
 
-  // Verify magic header
-  if (extractedMagic[0] !== MAGIC_HEADER[0] ||
-    extractedMagic[1] !== MAGIC_HEADER[1] ||
-    extractedMagic[2] !== MAGIC_HEADER[2] ||
-    extractedMagic[3] !== MAGIC_HEADER[3]) {
-    console.warn('[StegCrypt] Magic header mismatch - not our data or wrong LSB depth');
-    return null; // Not our data or wrong LSB depth
+  // Verify magic header using constant-time comparison
+  let match = 0;
+  for (let i = 0; i < 4; i++) {
+    match |= extractedMagic[i] ^ MAGIC_HEADER[i];
+  }
+  if (match !== 0) {
+    if (import.meta.env.DEV) {
+      console.warn('[StegCrypt] Magic header mismatch - not our data or wrong LSB depth');
+    }
+    return null;
   }
 
   // Extract length (bytes 4-7, big endian)

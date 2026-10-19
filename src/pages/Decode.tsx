@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Lock, Unlock, Download, AlertTriangle, Info, Image, Music, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,8 +30,9 @@ import { useMode } from '@/contexts/ModeContext';
 type CarrierType = 'image' | 'audio' | null;
 
 const detectCarrierType = (file: File): CarrierType => {
-  if (file.type === 'image/png' || file.type === 'image/bmp') return 'image';
-  if (file.type === 'audio/wav' || file.type === 'audio/wave' || file.name.endsWith('.wav')) return 'audio';
+  const type = file.type;
+  if (type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff') return 'image';
+  if (type === 'audio/wav' || type === 'audio/wave' || file.name.endsWith('.wav')) return 'audio';
   return null;
 };
 
@@ -50,6 +50,7 @@ export default function Decode() {
   const [decodedText, setDecodedText] = useState('');
   const [decodedBlob, setDecodedBlob] = useState<Blob | null>(null);
   const [copied, setCopied] = useState(false);
+  const [decodedFileName, setDecodedFileName] = useState<string>('recovered_file.bin');
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState<ProcessingStage | null>(null);
@@ -178,7 +179,9 @@ export default function Decode() {
           setDecodedFileName(metadata.name || 'recovered_file.bin');
         }
       } catch (e) {
-        // Fallback legacy (assume binary)
+        if (import.meta.env.DEV) {
+          console.warn('[StegCrypt] Payload unpack error, using fallback:', e);
+        }
         setDecodedBlob(new Blob([processedData]));
         setDecodedFileName('recovered_file.bin');
       }
@@ -210,8 +213,6 @@ export default function Decode() {
     }
   };
 
-  const [decodedFileName, setDecodedFileName] = useState<string>('file.bin');
-
   const handleDownload = () => {
     if (decodedBlob) {
       const url = URL.createObjectURL(decodedBlob);
@@ -226,7 +227,7 @@ export default function Decode() {
   const canDecode = stegoFile && carrierType && password;
 
   return (
-    <div className="container py-8 md:py-12 animate-fade-in overflow-x-hidden">
+    <div className="container py-8 md:py-12 animate-fade-in">
       <PageSEO
         title="Decode"
         description="Extract and decrypt hidden data from steganographic images or audio files. Secure AES-256 decryption with 100% local processing."
@@ -235,22 +236,22 @@ export default function Decode() {
       <div className="max-w-4xl mx-auto">
         {/* Mobile Warning */}
         {mobileWarning && (
-          <div className="mb-6 flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/30 text-warning text-sm">
-            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <div className="mb-6 flex items-center gap-2 p-4 border-[3px] border-[#F0C020] bg-[#F0C020]/15 text-[#121212] dark:text-[#F0C020] text-sm font-bold shadow-[3px_3px_0px_0px_#F0C020]">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 stroke-[3px]" />
             {mobileWarning}
           </div>
         )}
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4 sm:gap-0">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-accent flex items-center justify-center">
-                <Unlock className="h-5 w-5 text-accent-foreground" />
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter flex items-center gap-3">
+              <div className="h-10 w-10 bg-[#1040C0] flex items-center justify-center border-[3px] border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]">
+                <Unlock className="h-5 w-5 text-white stroke-[3px]" />
               </div>
               Decode
             </h1>
-            <p className="text-muted-foreground mt-2">
-              Extract and decrypt hidden data from a file
+            <p className="text-muted-foreground mt-2 font-medium italic">
+              Extract and decrypt hidden data from a steganographic carrier
             </p>
           </div>
           <EngineStatus state={engineState} />
@@ -261,36 +262,37 @@ export default function Decode() {
           <div className="lg:col-span-2 space-y-6">
             {/* Stego File */}
             <div className="cyber-card">
-              <h2 className="font-semibold mb-4 flex items-center gap-2">
-                Steganographic File
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black uppercase tracking-wide">Steganographic File</h2>
                 {carrierType && (
-                  <Badge variant="secondary" className="ml-auto gap-1.5">
-                    {carrierType === 'image' ? <Image className="h-3 w-3" /> : <Music className="h-3 w-3" />}
+                  <div className="flex items-center gap-1.5 px-3 py-1 border-[2px] border-[#121212] dark:border-white bg-[#1040C0] text-white text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white]">
+                    {carrierType === 'image' ? <Image className="h-3 w-3 stroke-[3px]" /> : <Music className="h-3 w-3 stroke-[3px]" />}
                     {carrierType === 'image' ? 'PNG Image' : 'WAV Audio'}
-                  </Badge>
+                  </div>
                 )}
-              </h2>
+              </div>
               <FileDropzone
-                accept="image/png,image/bmp,.bmp,audio/wav,audio/wave,.wav"
+                accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
                 maxSize={100}
                 onFileSelect={handleFileSelect}
                 selectedFile={stegoFile}
                 label="Select encoded file"
-                description="PNG/BMP image or WAV audio with hidden data"
+                description="PNG/BMP/WebP/TIFF image or WAV audio"
               />
             </div>
 
             {/* Decryption */}
             <div className="cyber-card">
-              <h2 className="font-semibold mb-4">Decryption</h2>
+              <h2 className="font-black mb-4 uppercase tracking-wide">Decryption</h2>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-xs font-black uppercase tracking-wide">Password</Label>
                 <Input
                   id="password"
                   type="password"
                   placeholder="Enter the encryption password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="border-[2px] border-[#121212] dark:border-white rounded-none"
                 />
               </div>
 
@@ -298,17 +300,17 @@ export default function Decode() {
                 <div className="mt-4 space-y-2">
                   <Label htmlFor="lsb-depth">LSB Depth</Label>
                   <Select value={lsbDepth} onValueChange={setLsbDepth}>
-                    <SelectTrigger id="lsb-depth">
+                    <SelectTrigger id="lsb-depth" className="rounded-none border-[2px] border-[#121212] dark:border-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-none border-[2px] border-[#121212] dark:border-white">
                       <SelectItem value="1">1 bit</SelectItem>
                       <SelectItem value="2">2 bits</SelectItem>
                       <SelectItem value="3">3 bits</SelectItem>
                       <SelectItem value="4">4 bits</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground font-medium">
                     Must match the LSB depth used during encoding
                   </p>
                 </div>
@@ -317,49 +319,39 @@ export default function Decode() {
 
             {/* Output */}
             {(decodedText || decodedBlob) && (
-              <div className="cyber-card border-success/30 bg-success/5">
-                <h2 className="font-semibold mb-4 text-success">Decoded Output</h2>
+              <div className="cyber-card border-[3px] border-[#1040C0] dark:border-[#6080F0] shadow-[6px_6px_0px_0px_#1040C0] dark:shadow-[6px_6px_0px_0px_#6080F0] animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h2 className="font-black mb-4 uppercase tracking-wide text-[#1040C0] dark:text-[#6080F0]">Decoded Output</h2>
 
                 {decodedText ? (
                   <div className="space-y-3">
                     <Textarea
                       value={decodedText}
                       readOnly
-                      className="min-h-[150px] font-mono bg-background"
+                      className="min-h-[150px] font-mono border-[2px] border-[#121212] dark:border-white bg-background rounded-none"
                     />
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={handleCopy}
-                      className="gap-2"
+                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#121212] dark:bg-white text-white dark:text-[#121212] font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#1040C0] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                     >
                       {copied ? (
-                        <>
-                          <Check className="h-4 w-4" />
-                          Copied
-                        </>
+                        <><Check className="h-4 w-4 stroke-[3px]" />Copied!</>
                       ) : (
-                        <>
-                          <Copy className="h-4 w-4" />
-                          Copy to Clipboard
-                        </>
+                        <><Copy className="h-4 w-4 stroke-[3px]" />Copy to Clipboard</>
                       )}
-                    </Button>
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <p className="text-sm text-muted-foreground">
-                      Binary data detected. Download to access the file.
+                    <p className="text-sm font-bold opacity-70 italic">
+                      Binary data detected. Download to recover the hidden file.
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={handleDownload}
-                      className="gap-2"
+                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="h-4 w-4 stroke-[3px]" />
                       Download File
-                    </Button>
+                    </button>
                   </div>
                 )}
               </div>
@@ -371,7 +363,7 @@ export default function Decode() {
             {/* Progress */}
             {isProcessing && (
               <div className="cyber-card">
-                <h3 className="font-semibold mb-4">Progress</h3>
+                <h3 className="font-black mb-4 uppercase tracking-wide text-xs">Processing Journey</h3>
                 <ProcessingStages
                   currentStage={currentStage}
                   completedStages={completedStages}
@@ -381,21 +373,17 @@ export default function Decode() {
             )}
 
             {/* Decode Button */}
-            <Button
-              size="lg"
-              className="w-full gap-2"
+            <button
+              className="w-full flex items-center justify-center gap-2 py-4 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white font-black uppercase tracking-widest text-base shadow-[8px_8px_0px_0px_#121212] dark:shadow-[8px_8px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
               disabled={!canDecode || isProcessing}
               onClick={handleDecode}
             >
               {isProcessing ? (
-                <>Processing...</>
+                <>Processing…</>
               ) : (
-                <>
-                  <Unlock className="h-4 w-4" />
-                  Decode
-                </>
+                <><Unlock className="h-5 w-5 stroke-[3px] flex-shrink-0" /><span>Decode</span></>
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </div>

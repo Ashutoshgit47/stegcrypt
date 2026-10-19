@@ -4,36 +4,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <title>StegCrypt - Browser-Based Steganography & Encryption</title>
-  <meta name="google-site-verification" content="5jhD5jimxXLLwDPE3Tf0DTh3f5Fziy0CVbkLmWwKbMU" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <!-- Primary SEO -->
+  <title>StegCrypt - Hide Secrets in Plain Sight | Steganography & Encryption</title>
   <meta name="description"
-    content="Hide encrypted secrets in plain sight as StegCrypt is a browser-based steganography tool with military-grade encryption. 100% local processing means your data never leaves your device." />
+    content="StegCrypt is a free, browser-based steganography and encryption tool. Hide encrypted messages inside images and audio files using AES-256 encryption. 100% local processing — your data never leaves your device." />
   <meta name="author" content="Ashutosh Gautam" />
   <meta name="keywords"
-    content="steganography, encryption, privacy, security, hide data, secret messages, AES-256, local processing" />
+    content="steganography, encryption, AES-256, hide data, secret messages, cryptography, privacy, security, PNG steganography, WAV steganography, password generator, hash generator, local processing" />
+  <meta name="robots" content="index, follow" />
+  <meta name="google-site-verification" content="5jhD5jimxXLLwDPE3Tf0DTh3f5Fziy0CVbkLmWwKbMU" />
 
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://stegcrypt.app/" />
   <meta property="og:title" content="StegCrypt - Hide Secrets in Plain Sight" />
   <meta property="og:description"
-    content="Browser-based steganography with military-grade encryption. 100% local processing." />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://stegcrypt.app/og-image.png" />
+    content="Browser-based steganography with military-grade AES-256 encryption. Hide encrypted data in images and audio files. 100% local processing." />
+  <meta property="og:site_name" content="StegCrypt" />
+  <meta property="og:locale" content="en_US" />
 
-  <meta name="twitter:card" content="summary_large_image" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:url" content="https://stegcrypt.app/" />
   <meta name="twitter:title" content="StegCrypt - Hide Secrets in Plain Sight" />
-  <meta name="twitter:description" content="Browser-based steganography with military-grade encryption." />
-  <meta name="twitter:image" content="https://stegcrypt.app/og-image.png" />
+  <meta name="twitter:description" content="Browser-based steganography with military-grade AES-256 encryption. 100% local processing." />
 
+  <!-- PWA -->
+  <meta name="application-name" content="StegCrypt" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="StegCrypt" />
+  <meta name="theme-color" content="#121212" />
+  <meta name="msapplication-TileColor" content="#121212" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Canonical -->
   <link rel="canonical" href="https://stegcrypt.app" />
 
-  <!-- Font preconnect for performance -->
+  <!-- Font preconnect for performance (self-hosted fonts loaded via CSS) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "StegCrypt",
+    "url": "https://stegcrypt.app",
+    "description": "Browser-based steganography and encryption tool. Hide encrypted data in images and audio files. 100% local processing.",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Ashutosh Gautam",
+      "url": "https://github.com/Ashutoshgit47"
+    },
+    "featureList": [
+      "AES-256-GCM encryption",
+      "LSB steganography",
+      "PNG, BMP, WAV, WebP, TIFF support",
+      "Password generator",
+      "Hash generator",
+      "100% local processing",
+      "PWA installable"
+    ]
+  }
+  </script>
 </head>
 
 <body>
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
+  <script>
+    // Register service worker for PWA offline support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {
+          // SW registration is optional — silently fail
+        });
+      });
+    }
+  </script>
 </body>
 
 </html>

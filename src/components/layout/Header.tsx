@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Shield, Lock, Unlock, HelpCircle, Moon, Sun, Monitor, Menu, X, User, Bug, ImageIcon } from 'lucide-react';
+import { Shield, Lock, Unlock, HelpCircle, Moon, Sun, Monitor, Menu, X, User, Bug, Wrench } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMode } from '@/contexts/ModeContext';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ const navItems = [
   { path: '/', label: 'Home', icon: Shield },
   { path: '/encode', label: 'Encode', icon: Lock },
   { path: '/decode', label: 'Decode', icon: Unlock },
+  { path: '/tools', label: 'Tools', icon: Wrench },
   { path: '/security', label: 'Security', icon: Shield },
   { path: '/help', label: 'Help', icon: HelpCircle },
   { path: '/about', label: 'About', icon: User },
@@ -29,16 +30,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <Shield className="h-5 w-5 text-primary-foreground" />
-          </div>
+      <div className="mx-auto px-4 flex h-16 items-center justify-between">
+        <Link to="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-80">
+          <img src="/favicon.svg" alt="StegCrypt Logo" className="h-9 w-9" />
           <span className="text-xl font-bold tracking-tight">StegCrypt</span>
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-3 ml-8">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -47,10 +46,10 @@ export function Header() {
                 key={item.path}
                 to={item.path}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-2 px-3 py-2 rounded-none text-sm font-black uppercase tracking-widest border-2 border-transparent transition-all active:translate-y-[2px] whitespace-nowrap',
                   isActive
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                    ? 'bauhaus-bg-red border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary hover:border-[#121212] dark:hover:border-white'
                 )}
               >
                 <Icon className="h-4 w-4" />
@@ -58,45 +57,35 @@ export function Header() {
               </Link>
             );
           })}
-          {/* ImageWrangler - External Link */}
-          <a
-            href="https://imagewrangler.pages.dev/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-secondary"
-          >
-            <ImageIcon className="h-4 w-4" />
-            ImageWrangler
-          </a>
           {/* Report Issue - External Link */}
           <a
             href="https://github.com/Ashutoshgit47/stegcrypt/issues"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-secondary"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-none text-sm font-black uppercase tracking-widest border-2 border-[#121212] dark:border-white bg-[#F0C020] text-[#121212] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white] whitespace-nowrap"
           >
-            <Bug className="h-4 w-4" />
-            Report Issue
+            <Bug className="h-4 w-4 stroke-[3px]" />
+            REPORT
           </a>
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-6">
           {/* Mode Badge */}
           {/* Mode Badge - Click to toggle */}
           <button
             onClick={() => setMode(mode === 'expert' ? 'quick' : 'expert')}
             className={cn(
-              'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+              'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-none text-[10px] font-black uppercase tracking-[0.15em] border-[3px] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none focus:outline-none shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]',
               mode === 'expert'
-                ? 'bg-warning/10 text-warning border border-warning/20'
-                : 'bg-success/10 text-success border border-success/20'
+                ? 'bg-[#F0C020] text-[#121212] border-[#121212] dark:border-white'
+                : 'bg-[#1040C0] text-white border-[#121212] dark:border-white'
             )}
           >
             <div className={cn(
-              'h-1.5 w-1.5 rounded-full',
-              mode === 'expert' ? 'bg-warning' : 'bg-success'
+              'h-2 w-2 border-2 border-current',
+              mode === 'expert' ? 'bg-[#121212]' : 'bg-white'
             )} />
-            {mode === 'expert' ? 'Expert' : 'Quick'} Mode
+            {mode === 'expert' ? 'Expert' : 'Quick'}
           </button>
 
           {/* Theme Toggle */}
@@ -149,38 +138,27 @@ export function Header() {
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-6 py-4 rounded-none text-sm font-black uppercase tracking-widest border-2 transition-all',
                     isActive
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                      ? 'bauhaus-bg-red border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]'
+                      : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-secondary hover:border-[#121212] dark:hover:border-white'
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5 stroke-[2.5px]" />
                   {item.label}
                 </Link>
               );
             })}
-            {/* ImageWrangler - External Link (Mobile) */}
-            <a
-              href="https://imagewrangler.pages.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-secondary"
-            >
-              <ImageIcon className="h-5 w-5" />
-              ImageWrangler
-            </a>
             {/* Report Issue - External Link (Mobile) */}
             <a
               href="https://github.com/Ashutoshgit47/stegcrypt/issues"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-secondary"
+              className="flex items-center gap-3 px-6 py-4 rounded-none text-sm font-black uppercase tracking-widest border-[3px] border-[#121212] dark:border-white bg-[#F0C020] text-[#121212] transition-all shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white]"
             >
-              <Bug className="h-5 w-5" />
-              Report Issue
+              <Bug className="h-5 w-5 stroke-[2.5px]" />
+              REPORT
             </a>
           </nav>
         </div>

@@ -52,12 +52,12 @@ const limitations = [
 
 const cryptoDetails = [
   { label: 'Symmetric Cipher', value: 'AES-256-GCM (AEAD)' },
-  { label: 'Key Derivation', value: 'PBKDF2-SHA256 (100K or 310K iterations)' },
-  { label: 'Authentication', value: 'GCM 128-bit auth tag' },
-  { label: 'Random Generation', value: 'Web Crypto getRandomValues()' },
-  { label: 'Salt Size', value: '128 bits (16 bytes, strict)' },
-  { label: 'IV/Nonce Size', value: '96 bits (12 bytes)' },
-  { label: 'Timing Protection', value: 'Uniform error responses' },
+  { label: 'Key Derivation', value: 'PBKDF2-SHA256 (100K-310K)' },
+  { label: 'Authentication', value: 'GCM 128-bit auth' },
+  { label: 'Random Generation', value: 'getRandomValues()' },
+  { label: 'Salt Size', value: '128 bits' },
+  { label: 'IV/Nonce Size', value: '96 bits' },
+  { label: 'Timing Protection', value: 'Uniform errors' },
 ];
 
 export default function Security() {
@@ -71,31 +71,33 @@ export default function Security() {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-6">
-            <Shield className="h-8 w-8 text-primary" />
+          <div className="inline-flex items-center justify-center h-16 w-16 bg-[#1040C0] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] mb-6 transform -rotate-3 hover:rotate-3 transition-transform">
+            <Shield className="h-8 w-8 text-white stroke-[3px]" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">Cryptography & Security</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tight mb-4">Cryptography & Security</h1>
+          <p className="text-lg font-bold opacity-80 max-w-2xl mx-auto">
             Learn how StegCrypt uses cryptography to protect your data — and understand its limitations.
           </p>
         </div>
 
         {/* Security Guarantees */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-success" />
+        <section className="mb-14">
+          <h2 className="text-2xl font-black uppercase tracking-wider mb-8 flex items-center gap-3">
+            <div className="h-8 w-8 flex items-center justify-center bg-[#1040C0] border-2 border-[#121212] dark:border-white">
+              <CheckCircle className="h-5 w-5 text-white stroke-[3px]" />
+            </div>
             Security Guarantees
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             {guarantees.map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.title} className="cyber-card">
-                  <div className="h-12 w-12 rounded-lg bg-success/10 flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6 text-success" />
+                <div key={item.title} className="cyber-card group hover:-translate-y-2 transition-transform duration-300 flex flex-col items-start bg-white dark:bg-[#121212] shadow-[6px_6px_0px_0px_#1040C0]">
+                  <div className="h-12 w-12 flex items-center justify-center mb-5 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white] group-hover:-rotate-6 transition-transform">
+                    <Icon className="h-6 w-6 text-white stroke-[3px]" />
                   </div>
-                  <h3 className="font-semibold mb-2">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <h3 className="text-lg font-black uppercase tracking-wide mb-2 leading-tight">{item.title}</h3>
+                  <p className="text-sm font-medium opacity-80">{item.description}</p>
                 </div>
               );
             })}
@@ -103,18 +105,22 @@ export default function Security() {
         </section>
 
         {/* Cryptographic Details */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <Lock className="h-5 w-5 text-primary" />
+        <section className="mb-14">
+          <h2 className="text-2xl font-black uppercase tracking-wider mb-8 flex items-center gap-3">
+            <div className="h-8 w-8 flex items-center justify-center bg-[#D02020] border-2 border-[#121212] dark:border-white">
+              <Lock className="h-5 w-5 text-white stroke-[3px]" />
+            </div>
             Cryptographic Specifications
           </h2>
-          <div className="cyber-card">
-            <div className="divide-y divide-border">
+          <div className="cyber-card overflow-hidden bg-[#F0F0F0] dark:bg-[#121212] p-0">
+            <div className="divide-y-2 divide-[#121212] dark:divide-white">
               {cryptoDetails.map((item) => (
-                <div key={item.label} className="py-3 first:pt-0 last:pb-0">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4">
-                    <span className="text-sm text-muted-foreground">{item.label}</span>
-                    <span className="text-sm font-mono font-medium text-foreground sm:text-right">{item.value}</span>
+                <div key={item.label} className="p-4 sm:p-5 hover:bg-[#F0C020] hover:text-[#121212] dark:hover:bg-[#F0C020] dark:hover:text-[#121212] transition-colors group">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                    <span className="text-sm font-bold uppercase tracking-wider">{item.label}</span>
+                    <span className="text-sm font-mono font-bold sm:text-right px-3 py-1 bg-[#121212] text-white dark:bg-white dark:text-[#121212] group-hover:bg-[#121212] group-hover:text-white transition-colors">
+                      {item.value}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -123,28 +129,32 @@ export default function Security() {
         </section>
 
         {/* Limitations */}
-        <section className="mb-12">
-          <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-warning" />
+        <section className="mb-14">
+          <h2 className="text-2xl font-black uppercase tracking-wider mb-8 flex items-center gap-3">
+            <div className="h-8 w-8 flex items-center justify-center bg-[#F0C020] border-2 border-[#121212] dark:border-white">
+              <AlertTriangle className="h-5 w-5 text-[#121212] stroke-[3px]" />
+            </div>
             Known Limitations
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {limitations.map((item) => (
               <div
                 key={item.title}
-                className={`cyber-card flex gap-4 ${item.severity === 'critical' ? 'border-destructive/30 bg-destructive/5' : 'border-warning/30 bg-warning/5'
+                className={`cyber-card flex flex-col sm:flex-row gap-5 p-6 ${item.severity === 'critical' ? 'bg-[#D02020] text-white border-[#121212] dark:border-white shadow-[6px_6px_0px_0px_#121212] dark:shadow-[6px_6px_0px_0px_white]' : 'bg-[#F0C020] text-[#121212] border-[#121212] dark:border-white shadow-[6px_6px_0px_0px_#121212] dark:shadow-[6px_6px_0px_0px_white]'
                   }`}
               >
-                <div className="flex-shrink-0 mt-0.5">
-                  {item.severity === 'critical' ? (
-                    <XCircle className="h-5 w-5 text-destructive" />
-                  ) : (
-                    <AlertTriangle className="h-5 w-5 text-warning" />
-                  )}
+                <div className="flex-shrink-0">
+                  <div className={`h-14 w-14 flex items-center justify-center border-[3px] border-inherit shadow-[4px_4px_0px_0px_currentColor] bg-transparent`}>
+                      {item.severity === 'critical' ? (
+                        <XCircle className="h-7 w-7 stroke-[3px]" />
+                      ) : (
+                        <AlertTriangle className="h-7 w-7 stroke-[3px]" />
+                      )}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                <div className="pt-1">
+                  <h3 className="text-xl font-black uppercase tracking-wide mb-2 leading-tight">{item.title}</h3>
+                  <p className="text-base font-bold opacity-90">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -153,11 +163,19 @@ export default function Security() {
 
         {/* Open Source Notice */}
         <section>
-          <div className="cyber-card bg-primary/5 border-primary/20 text-center">
-            <h3 className="font-semibold mb-2">Open & Auditable</h3>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+          <div className="cyber-card p-8 md:p-12 text-center bg-[#1040C0] text-white border-[#121212] dark:border-white shadow-[6px_6px_0px_0px_#121212] dark:shadow-[6px_6px_0px_0px_white] hover:-translate-y-1 transition-transform">
+            <h3 className="text-2xl font-black uppercase tracking-wider mb-4">Open & Auditable</h3>
+            <p className="text-lg font-bold opacity-90 max-w-2xl mx-auto leading-relaxed">
               StegCrypt's code is open source. You can inspect every line to verify these security claims.
-              Don't trust, verify.
+              <br/>
+              <a 
+                href="https://github.com/Ashutoshgit47/stegcrypt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-6 px-6 py-3 bg-[#F0C020] text-[#121212] border-[3px] border-[#121212] dark:border-white shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] rotate-2 hover:rotate-0 hover:scale-105 transition-transform"
+              >
+                <span className="hover-glitch-text" data-text="DON'T TRUST, VERIFY.">DON'T TRUST, VERIFY.</span>
+              </a>
             </p>
           </div>
         </section>
