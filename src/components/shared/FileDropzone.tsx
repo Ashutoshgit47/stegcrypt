@@ -23,6 +23,7 @@ export function FileDropzone({
   error,
 }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -48,10 +49,12 @@ export function FileDropzone({
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
     if (file) {
-      const validationError = validateFile(file);
-      if (validationError) {
+      const err = validateFile(file);
+      if (err) {
+        setValidationError(err);
         onFileSelect(null);
       } else {
+        setValidationError(null);
         onFileSelect(file);
       }
     }
@@ -59,15 +62,26 @@ export function FileDropzone({
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    // Reset the input so selecting the same file again still fires onChange
+    e.target.value = '';
     if (file) {
-      const validationError = validateFile(file);
-      if (validationError) {
+      const err = validateFile(file);
+      if (err) {
+        setValidationError(err);
         onFileSelect(null);
       } else {
+        setValidationError(null);
         onFileSelect(file);
       }
     }
   }, [onFileSelect, validateFile]);
+
+  const handleClear = useCallback(() => {
+    setValidationError(null);
+    onFileSelect(null);
+  }, [onFileSelect]);
+
+  const displayError = validationError || error;
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024) return `${bytes} B`;
@@ -93,7 +107,7 @@ export function FileDropzone({
             variant="ghost"
             size="icon"
             className="h-8 w-8 flex-shrink-0 text-[#121212] hover:text-[#D02020] hover:bg-transparent"
-            onClick={() => onFileSelect(null)}
+            onClick={handleClear}
           >
             <X className="h-4 w-4 stroke-[3px]" />
           </Button>
@@ -112,9 +126,8 @@ export function FileDropzone({
             isDragging
               ? 'border-[#D02020] bg-[#D02020]/5 shadow-[4px_4px_0px_0px_#D02020] translate-x-[2px] translate-y-[2px]'
               : 'border-[#121212] dark:border-white hover:bg-[#F0C020]/10 hover:shadow-[4px_4px_0px_0px_#F0C020] hover:border-[#F0C020]',
-            error && 'border-[#D02020] bg-[#D02020]/5'
-          )}
-        >
+            displayError && 'border-[#D02020] bg-[#D02020]/5'
+          )}        >
           <input
             type="file"
             accept={accept}
@@ -141,10 +154,10 @@ export function FileDropzone({
         </div>
       )}
 
-      {error && (
+      {displayError && (
         <div className="flex items-center gap-2 text-[#D02020] text-sm font-bold">
           <AlertCircle className="h-4 w-4 stroke-[3px] flex-shrink-0" />
-          {error}
+          {displayError}
         </div>
       )}
     </div>

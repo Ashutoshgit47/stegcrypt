@@ -47,10 +47,22 @@ import { cn } from '@/lib/utils';
 
 type CarrierType = 'image' | 'audio' | null;
 
+const IMAGE_EXTENSIONS = ['png', 'bmp', 'webp', 'tif', 'tiff'];
+const AUDIO_EXTENSIONS = ['wav', 'wave'];
+
 const detectCarrierType = (file: File): CarrierType => {
-  const type = file.type;
-  if (type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff') return 'image';
-  if (type === 'audio/wav' || type === 'audio/wave' || file.name.endsWith('.wav')) return 'audio';
+  const type = (file.type || '').toLowerCase();
+  const ext = file.name.toLowerCase().split('.').pop() || '';
+  // Some platforms report an empty or non-standard MIME type (e.g. audio/x-wav),
+  // so fall back to the file extension.
+  if (
+    type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff' ||
+    IMAGE_EXTENSIONS.includes(ext)
+  ) return 'image';
+  if (
+    type === 'audio/wav' || type === 'audio/wave' || type === 'audio/x-wav' ||
+    AUDIO_EXTENSIONS.includes(ext)
+  ) return 'audio';
   return null;
 };
 
@@ -100,6 +112,9 @@ export default function Encode() {
     isExpertMode,
     isMobile ? 'mobile' : 'desktop'
   );
+  // The depth actually used for capacity math and embedding. Mobile and Quick
+  // mode are locked to 1 bit regardless of what the selector shows.
+  const lsbDepthValue = effectiveLsbDepth.depth;
 
   // Show mobile warning only if Expert Mode is active and LSB was forced
   useEffect(() => {
@@ -118,12 +133,12 @@ export default function Encode() {
         try {
           if (carrierType === 'image') {
             const imageData = await loadImage(carrierFile);
-            const analysis = analyzeImageCapacity(imageData, parseInt(lsbDepth));
+            const analysis = analyzeImageCapacity(imageData, lsbDepthValue);
             setCapacity(prev => ({ ...prev, total: analysis.maxCapacityBytes }));
           } else {
             const buffer = await carrierFile.arrayBuffer();
             const wavData = decodeWav(buffer);
-            const analysis = analyzeWavCapacity(wavData, parseInt(lsbDepth));
+            const analysis = analyzeWavCapacity(wavData, lsbDepthValue);
             setCapacity(prev => ({ ...prev, total: analysis.maxCapacityBytes }));
           }
         } catch (e) {
@@ -133,7 +148,7 @@ export default function Encode() {
         }
       })();
     }
-  }, [lsbDepth, carrierFile, carrierType]);
+  }, [lsbDepthValue, carrierFile, carrierType]);
 
   const engineState = mapToEngineState(wasmState);
 
@@ -141,12 +156,12 @@ export default function Encode() {
     try {
       if (type === 'image') {
         const imageData = await loadImage(file);
-        const analysis = analyzeImageCapacity(imageData, parseInt(lsbDepth));
+        const analysis = analyzeImageCapacity(imageData, lsbDepthValue);
         setCapacity({ used: 0, total: analysis.maxCapacityBytes });
       } else { // This 'else' now covers audio
         const buffer = await file.arrayBuffer();
         const wavData = decodeWav(buffer);
-        const analysis = analyzeWavCapacity(wavData, parseInt(lsbDepth));
+        const analysis = analyzeWavCapacity(wavData, lsbDepthValue);
         setCapacity({ used: 0, total: analysis.maxCapacityBytes });
       }
     } catch (error) {
@@ -156,7 +171,7 @@ export default function Encode() {
         description: 'Could not analyze the carrier file.',
       });
     }
-  }, [lsbDepth, toast]);
+  }, [lsbDepthValue, toast]);
 
   const handleCarrierSelect = useCallback(async (file: File | null) => {
     setCarrierFile(file);
@@ -253,12 +268,12 @@ export default function Encode() {
 
       if (carrierType === 'image') {
         imageData = await loadImage(carrierFile);
-        const analysis = analyzeImageCapacity(imageData, parseInt(lsbDepth));
+        const analysis = analyzeImageCapacity(imageData, lsbDepthValue);
         maxCapacity = analysis.maxCapacityBytes;
       } else {
         const buffer = await carrierFile.arrayBuffer();
         wavData = decodeWav(buffer);
-        const analysis = analyzeWavCapacity(wavData, parseInt(lsbDepth));
+        const analysis = analyzeWavCapacity(wavData, lsbDepthValue);
         maxCapacity = analysis.maxCapacityBytes;
       }
       setCompletedStages(['load']);
@@ -301,12 +316,12 @@ export default function Encode() {
       let extension: string;
 
       if (carrierType === 'image' && imageData) {
-        const result = embedData(imageData, packedData, parseInt(lsbDepth));
+        const result = embedData(imageData, packedData, lsbDepthValue);
         const isBmp = carrierFile?.type === 'image/bmp' || carrierFile?.name.toLowerCase().endsWith('.bmp');
         blob = isBmp ? createBmpBlob(result) : await createPngBlob(result);
         extension = isBmp ? 'bmp' : 'png';
       } else if (carrierType === 'audio' && wavData) {
-        const result = embedWavData(wavData, packedData, parseInt(lsbDepth));
+        const result = embedWavData(wavData, packedData, lsbDepthValue);
         blob = encodeWav(result);
         extension = 'wav';
       } else throw new Error('Invalid state');
@@ -320,7 +335,8 @@ export default function Encode() {
       const originalName = carrierFile.name.replace(/\.[^/.]+$/, '');
       a.download = `${originalName}_steg.${extension}`;
       a.click();
-      URL.revokeObjectURL(url);
+      // Revoking instantly can cancel the download in Firefox/Safari.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
       setCompletedStages(['load', 'analyze', 'encrypt', 'embed', 'save']);
 
       toast({ title: 'Encoding Complete', description: 'Your file has been downloaded.' });

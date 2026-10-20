@@ -82,6 +82,7 @@ function HashTool() {
   const [input, setInput] = useState('');
   const [results, setResults] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const compute = useCallback(async () => {
     if (!input) return;
@@ -95,10 +96,16 @@ function HashTool() {
         hashes[algo] = bufToHex(buf);
       }
       setResults(hashes);
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Hash failed',
+        description: 'The browser refused the crypto operation. Make sure the page is served over HTTPS.',
+      });
     } finally {
       setLoading(false);
     }
-  }, [input]);
+  }, [input, toast]);
 
   return (
     <div className="space-y-4">
@@ -237,10 +244,12 @@ function HexTool() {
         setOutput(Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' '));
       } else {
         const hexStr = input.replace(/\s+/g, '');
-        if (hexStr.length % 2 !== 0) throw new Error('Invalid Hex length');
+        if (hexStr.length === 0 || hexStr.length % 2 !== 0 || /[^0-9a-fA-F]/.test(hexStr)) {
+          throw new Error('Invalid hex input');
+        }
         const bytes = new Uint8Array(hexStr.length / 2);
         for (let i = 0; i < hexStr.length; i += 2) {
-          bytes[i / 2] = parseInt(hexStr.substr(i, 2), 16);
+          bytes[i / 2] = parseInt(hexStr.substring(i, i + 2), 16);
         }
         setOutput(new TextDecoder().decode(bytes));
       }
@@ -351,14 +360,15 @@ function ImageConverterTool() {
           return;
         }
 
-        const ext = targetType === 'image/jpeg' ? 'jpg' : targetType === 'image/webp' ? 'webp' : 'png';
+        const ext = blob.type === 'image/jpeg' ? 'jpg' : blob.type === 'image/webp' ? 'webp' : 'png';
         const newName = file.name.replace(/\.[^/.]+$/, '') + `_converted.${ext}`;
 
         const dl = document.createElement('a');
         dl.href = URL.createObjectURL(blob);
         dl.download = newName;
         dl.click();
-        URL.revokeObjectURL(dl.href);
+        const dlUrl = dl.href;
+        setTimeout(() => URL.revokeObjectURL(dlUrl), 1000);
 
         toast({ title: 'Conversion Complete', description: `File saved as ${newName}` });
         setLoading(false);
@@ -399,7 +409,7 @@ function ImageConverterTool() {
                 onClick={() => setTargetType('image/webp')}
                 className="rounded-none border-2 border-black dark:border-white shadow-[2px_2px_0px_0px_black] dark:shadow-[2px_2px_0px_0px_white]"
               >
-                WEBP
+                WEBP (Lossy)
               </Button>
               <Button
                 variant={targetType === 'image/jpeg' ? 'default' : 'outline'}
@@ -411,7 +421,8 @@ function ImageConverterTool() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Note: PNG and WEBP (Lossless) are recommended for Steganography carriers.
+              Note: PNG is the only lossless output here. WebP and JPEG are re-encoded lossily by the
+              browser and cannot be used as Steganography carriers.
             </p>
           </div>
 
@@ -530,8 +541,14 @@ function PasswordGeneratorTool() {
   const [password, setPassword] = useState('');
   const [length, setLength] = useState(24);
 
+  // Keep the slider/number input inside the supported 8-64 range
+  const clampLength = (value: number) => {
+    if (!Number.isFinite(value)) return 8;
+    return Math.min(64, Math.max(8, Math.round(value)));
+  };
+
   const generate = () => {
-    const pwd = generateSecurePassword(length);
+    const pwd = generateSecurePassword(clampLength(length));
     setPassword(pwd);
   };
 
@@ -550,7 +567,7 @@ function PasswordGeneratorTool() {
              aria-valuemin={8}
              aria-valuemax={64}
              aria-valuenow={length}
-             onChange={e => setLength(Number(e.target.value))}
+             onChange={e => setLength(clampLength(Number(e.target.value)))}
              className="w-full accent-primary"
            />
            <Input
@@ -559,7 +576,7 @@ function PasswordGeneratorTool() {
              max="64"
              value={length}
              aria-label="Password length number input"
-             onChange={e => setLength(Number(e.target.value))}
+             onChange={e => setLength(clampLength(Number(e.target.value)))}
              className="w-20 font-mono"
            />
         </div>

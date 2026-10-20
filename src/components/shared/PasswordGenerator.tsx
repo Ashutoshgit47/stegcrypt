@@ -12,6 +12,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 // Character sets for password generation
 const CHARSET_LOWER = 'abcdefghijkmnpqrstuvwxyz'; // no l, o (ambiguous)
@@ -91,6 +92,7 @@ interface PasswordGeneratorProps {
 }
 
 export function PasswordGenerator({ onUsePassword, className }: PasswordGeneratorProps) {
+  const { toast } = useToast();
   const [password, setPassword] = useState('');
   const [copied, setCopied] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -101,10 +103,18 @@ export function PasswordGenerator({ onUsePassword, className }: PasswordGenerato
 
   const handleCopy = useCallback(async () => {
     if (!password) return;
-    await navigator.clipboard.writeText(password);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [password]);
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Copy failed',
+        description: 'Clipboard access was denied. Select the password and copy it manually.',
+      });
+    }
+  }, [password, toast]);
 
   const handleUse = useCallback(() => {
     onUsePassword(password);

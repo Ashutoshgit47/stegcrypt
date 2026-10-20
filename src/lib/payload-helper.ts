@@ -161,7 +161,10 @@ export function unpackPayload(buffer: ArrayBuffer): UnpackedPayload {
             metadata.name = metadata.name.slice(0, MAX_FILENAME_LENGTH).replace(/[<>:"/\\|?*\u0000-\u001f]/g, '_');
         }
     } catch (e) {
-        throw new Error('Invalid payload format', { cause: e });
+        if (import.meta.env?.DEV) {
+            console.warn('[StegCrypt] Failed to parse payload metadata:', e);
+        }
+        throw new Error('Invalid payload format');
     }
 
     // Payload

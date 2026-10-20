@@ -42,7 +42,7 @@ export function decodeWav(buffer: ArrayBuffer): WavData {
     let dataOffset = 0;
     let dataSize = 0;
 
-    while (offset < data.length) {
+    while (offset + 8 <= data.length) {
         const chunkId = String.fromCharCode(
             data[offset], data[offset + 1], data[offset + 2], data[offset + 3]
         );
@@ -50,6 +50,9 @@ export function decodeWav(buffer: ArrayBuffer): WavData {
         offset += 8;
 
         if (chunkId === 'fmt ') {
+            if (chunkSize < 16 || offset + 16 > data.length) {
+                throw new Error('Invalid WAV file: truncated fmt chunk');
+            }
             const audioFormat = view.getUint16(offset, true);
             if (audioFormat !== 1) {
                 throw new Error(`Unsupported audio format: ${audioFormat}. Only PCM (1) is supported.`);
@@ -65,20 +68,27 @@ export function decodeWav(buffer: ArrayBuffer): WavData {
             }
         } else if (chunkId === 'data') {
             dataOffset = offset;
-            dataSize = chunkSize;
+            // Streamed/truncated WAVs can declare a size larger than the file.
+            // Clamp so we never read past the buffer.
+            dataSize = Math.min(chunkSize, data.length - offset);
         }
 
+        // A chunk that overruns the file means the remaining data is truncated.
+        if (chunkSize > data.length - offset) break;
         offset += chunkSize;
         // Word alignment
         if (chunkSize % 2 !== 0) offset++;
     }
 
-    if (dataOffset === 0 || sampleRate === 0) {
+    if (dataOffset === 0 || sampleRate === 0 || channels === 0) {
         throw new Error('Invalid WAV file: missing fmt or data chunk');
     }
 
-    // Read samples directly as Int16
-    const numSamples = dataSize / 2;
+    // Read samples directly as Int16 (dataSize is already clamped to the buffer)
+    const numSamples = Math.floor(dataSize / 2);
+    if (numSamples === 0) {
+        throw new Error('Invalid WAV file: no audio samples found');
+    }
     const samples = new Int16Array(numSamples);
     for (let i = 0; i < numSamples; i++) {
         samples[i] = view.getInt16(dataOffset + i * 2, true);

@@ -54,6 +54,12 @@ export function decodeBMP(buffer: ArrayBuffer): ImageData {
     // Row padding (BMP rows are padded to 4-byte boundaries)
     const rowSize = Math.ceil((width * bytesPerPixel) / 4) * 4;
 
+    // Guard against truncated pixel data (reads past the buffer would silently
+    // produce zeroed pixels and destroy the hidden payload).
+    if (dataOffset + rowSize * absHeight > buffer.byteLength) {
+        throw new Error('Invalid BMP file: pixel data is truncated');
+    }
+
     // Create output ImageData (always RGBA)
     const pixels = new Uint8ClampedArray(width * absHeight * 4);
 

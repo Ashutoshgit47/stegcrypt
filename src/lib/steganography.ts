@@ -114,10 +114,10 @@ export function embedData(
 
       pixels[idx] = pixelValue;
     }
-
-    // Ensure alpha is always 255 for maximum compatibility
-    pixels[pixelOffset + 3] = 255;
   }
+
+  // Alpha is left untouched: forcing it to 255 would turn transparent PNGs
+  // opaque, which is a very visible change for a supposedly hidden payload.
 
   return { data: pixels, width, height };
 }

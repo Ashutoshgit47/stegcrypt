@@ -45,10 +45,22 @@ import { useMode } from '@/contexts/ModeContext';
 
 type CarrierType = 'image' | 'audio' | null;
 
+const IMAGE_EXTENSIONS = ['png', 'bmp', 'webp', 'tif', 'tiff'];
+const AUDIO_EXTENSIONS = ['wav', 'wave'];
+
 const detectCarrierType = (file: File): CarrierType => {
-  const type = file.type;
-  if (type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff') return 'image';
-  if (type === 'audio/wav' || type === 'audio/wave' || file.name.toLowerCase().endsWith('.wav')) return 'audio';
+  const type = (file.type || '').toLowerCase();
+  const ext = file.name.toLowerCase().split('.').pop() || '';
+  // Some platforms report an empty or non-standard MIME type (e.g. audio/x-wav),
+  // so fall back to the file extension.
+  if (
+    type === 'image/png' || type === 'image/bmp' || type === 'image/webp' || type === 'image/tiff' ||
+    IMAGE_EXTENSIONS.includes(ext)
+  ) return 'image';
+  if (
+    type === 'audio/wav' || type === 'audio/wave' || type === 'audio/x-wav' ||
+    AUDIO_EXTENSIONS.includes(ext)
+  ) return 'audio';
   return null;
 };
 
@@ -91,6 +103,9 @@ export default function Decode() {
     isExpertMode,
     isMobile ? 'mobile' : 'desktop'
   );
+  // Depth used for the first extraction attempt and capacity display. On mobile
+  // and in Quick mode this is always 1; the auto-probe still scans 1-4.
+  const lsbDepthValue = effectiveLsbDepth.depth;
 
   // Show mobile warning only if Expert Mode is active and LSB was forced
   useEffect(() => {
@@ -121,7 +136,7 @@ export default function Decode() {
         if (carrierType === 'image') {
           const img = await loadImage(stegoFile);
           if (!isMounted) return;
-          const analysis = analyzeImageCapacity(img, parseInt(lsbDepth) || 1);
+          const analysis = analyzeImageCapacity(img, lsbDepthValue);
           setCarrierInfo({
             capacityBytes: analysis.maxCapacityBytes,
             meta: `${analysis.width} × ${analysis.height} px`,
@@ -130,7 +145,7 @@ export default function Decode() {
           const buf = await stegoFile.arrayBuffer();
           if (!isMounted) return;
           const wav = decodeWav(buf);
-          const analysis = analyzeWavCapacity(wav, parseInt(lsbDepth) || 1);
+          const analysis = analyzeWavCapacity(wav, lsbDepthValue);
           const duration = (wav.samples.length / (wav.sampleRate * wav.channels)).toFixed(1);
           setCarrierInfo({
             capacityBytes: analysis.maxCapacityBytes,
@@ -143,7 +158,7 @@ export default function Decode() {
     })();
 
     return () => { isMounted = false; };
-  }, [stegoFile, carrierType, lsbDepth]);
+  }, [stegoFile, carrierType, lsbDepthValue]);
 
   const engineState = mapToEngineState(wasmState);
 
@@ -207,7 +222,7 @@ export default function Decode() {
       // Stage 1: Load
       setCurrentStage('load');
       let extractedData: ArrayBuffer | null = null;
-      const initialDepth = parseInt(lsbDepth) || 1;
+      const initialDepth = lsbDepthValue;
       let matchedDepth = initialDepth;
 
       if (carrierType === 'image') {
@@ -361,7 +376,7 @@ export default function Decode() {
     a.href = url;
     a.download = 'decrypted_secret.txt';
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
   const handleDownloadBlob = () => {
@@ -371,7 +386,7 @@ export default function Decode() {
       a.href = url;
       a.download = decodedFileName;
       a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
   };
 

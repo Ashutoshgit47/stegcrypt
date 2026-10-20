@@ -30,10 +30,16 @@ function int32ToBytes(val: number): Uint8Array {
     ]);
 }
 
+// TS types Uint8Array buffers as ArrayBufferLike, while DOM APIs require an
+// ArrayBuffer-backed view. Every buffer here is a plain ArrayBuffer, so these
+// casts are safe and avoid copying large image buffers.
+const asBufferSource = (data: Uint8Array) => data as unknown as BufferSource;
+const asBlobPart = (data: Uint8Array) => data as unknown as BlobPart;
+
 async function compress(data: Uint8Array): Promise<Uint8Array> {
     const stream = new CompressionStream('deflate');
     const writer = stream.writable.getWriter();
-    writer.write(data);
+    writer.write(asBufferSource(data));
     writer.close();
 
     const chunks: Uint8Array[] = [];
@@ -59,7 +65,7 @@ async function compress(data: Uint8Array): Promise<Uint8Array> {
 async function decompress(data: Uint8Array): Promise<Uint8Array> {
     const stream = new DecompressionStream('deflate');
     const writer = stream.writable.getWriter();
-    writer.write(data);
+    writer.write(asBufferSource(data));
     writer.close();
 
     const chunks: Uint8Array[] = [];
@@ -138,7 +144,7 @@ export async function decodePNG(buffer: ArrayBuffer): Promise<ImageData> {
     const idatChunks: Uint8Array[] = [];
     let idatTotalSize = 0;
 
-    while (offset < data.length) {
+    while (offset + 8 <= data.length) {
         const view = new DataView(data.buffer, offset);
         const length = view.getUint32(0, false);
         offset += 4;
@@ -170,8 +176,25 @@ export async function decodePNG(buffer: ArrayBuffer): Promise<ImageData> {
     }
 
     if (width === 0 || height === 0) throw new Error('Invalid PNG dimensions');
-    // Only support Truecolor (2 or 6) with generic depth for now. 
-    // Just blindly assume compatible structure if Filter 0 is used.
+
+    // This decoder only handles a narrow subset of PNG. Anything else must be
+    // rejected so the caller can fall back to the browser's canvas decoder
+    // instead of silently producing corrupted pixels.
+    if (depth !== 8) {
+        throw new Error(`Unsupported PNG bit depth: ${depth}`);
+    }
+    if (colorType !== 2 && colorType !== 6) {
+        throw new Error(`Unsupported PNG color type: ${colorType}`);
+    }
+    if (compression !== 0 || filter !== 0) {
+        throw new Error('Unsupported PNG compression or filter method');
+    }
+    if (interlace !== 0) {
+        throw new Error('Interlaced PNG files are not supported by the strict decoder');
+    }
+    if (idatChunks.length === 0) {
+        throw new Error('Invalid PNG: no image data');
+    }
 
     // Reconstruct valid Zlib stream from IDATs
     const zlibStream = new Uint8Array(idatTotalSize);
@@ -182,13 +205,16 @@ export async function decodePNG(buffer: ArrayBuffer): Promise<ImageData> {
     }
 
     const decompressed = await decompress(zlibStream);
-    const bytesPerPixel = 4; // For Truecolor+Alpha
     // Note: Actual bpp depends on ColorType. 
     // Type 6 (Truecolor+Alpha) = 4 bytes. Type 2 (Truecolor) = 3 bytes.
     let channels = 4;
     if (colorType === 2) channels = 3;
 
     const filterRowSize = (width * channels);
+    const expectedSize = height * (filterRowSize + 1);
+    if (decompressed.length < expectedSize) {
+        throw new Error('Invalid PNG: truncated image data');
+    }
     const pixels = new Uint8ClampedArray(width * height * 4);
 
     // Paeth predictor function
@@ -270,13 +296,13 @@ export async function decodePNG(buffer: ArrayBuffer): Promise<ImageData> {
 }
 
 function writeChunk(parts: BlobPart[], type: string, data: Uint8Array) {
-    parts.push(int32ToBytes(data.length));
+    parts.push(asBlobPart(int32ToBytes(data.length)));
     const typeBytes = new TextEncoder().encode(type);
-    parts.push(typeBytes);
-    parts.push(data);
+    parts.push(asBlobPart(typeBytes));
+    parts.push(asBlobPart(data));
     let crc = 0xFFFFFFFF;
     crc = updateCrc(crc, typeBytes);
     crc = updateCrc(crc, data);
     crc ^= 0xFFFFFFFF;
-    parts.push(int32ToBytes(crc >>> 0));
+    parts.push(asBlobPart(int32ToBytes(crc >>> 0)));
 }
