@@ -94,7 +94,7 @@ export default function Index() {
         {/* ─────────────────────────────────────────────────────── */}
         {/* ─────────────────────────────────────────────────────── */}
 
-        <div className="container relative py-16 md:py-24">
+        <div className="container relative py-12 md:py-16 lg:py-20">
           <div className="max-w-3xl mx-auto text-center space-y-6">
 
             {/* Pill badge */}
@@ -103,28 +103,32 @@ export default function Index() {
               Browser-Based Steganography
             </div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight">
-              Hide Secrets in
-              <span className="bg-[#D02020] text-white px-2"> Plain</span>
-              <span className="bg-[#F0C020] text-[#121212] px-2">Sight</span>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tight leading-[1.15]">
+              Hide Secrets in<br className="hidden sm:inline" />{' '}
+              <span className="inline-block bg-[#D02020] text-white px-3 py-0.5 mx-1 shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]">
+                Plain
+              </span>
+              <span className="inline-block bg-[#F0C020] text-[#121212] px-3 py-0.5 mx-1 shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]">
+                Sight
+              </span>
             </h1>
 
-            <p className="text-lg md:text-xl font-bold opacity-80 max-w-2xl mx-auto">
-              Encrypt and embed confidential data within ordinary images.
+            <p className="text-base sm:text-lg md:text-xl font-bold opacity-80 max-w-2xl mx-auto leading-relaxed">
+              Encrypt and embed confidential data within ordinary images and audio files.
               All processing happens locally — your secrets never leave your device.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Link
                 to="/encode"
-                className="flex items-center gap-2 px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#D02020] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#D02020] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px]"
               >
                 <Lock className="h-4 w-4 stroke-[3px]" />
                 Encode
               </Link>
               <Link
                 to="/decode"
-                className="flex items-center gap-2 px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[5px] hover:translate-y-[5px] hover:shadow-none transition-all"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white shadow-[5px_5px_0px_0px_#121212] dark:shadow-[5px_5px_0px_0px_white] font-black uppercase tracking-widest text-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all active:translate-x-[4px] active:translate-y-[4px]"
               >
                 <Unlock className="h-4 w-4 stroke-[3px]" />
                 Decode
