@@ -4,18 +4,20 @@
 
 | Feature | Status | Description |
 |---------|--------|-------------|
-| Steganography Mode | ✅ Working | Hide encrypted data in PNG, BMP, WebP (lossless), TIFF, and WAV files |
-| Pure Cryptography Mode | ✅ Working | Encrypt files or text directly without a carrier; outputs a `.stegcrypt` file |
-| Password Generator | ✅ Working | Built-in cryptographically secure password generator with entropy meter |
-| Security Tools | ✅ Working | SHA hash generator, Base64, Hex converter on the /tools page |
-| Responsive Design | ✅ Working | Fully optimized for screens < 768 px |
-| Dark Mode | ✅ Working | Automatic system theme detection with manual override |
-| Touch Gestures | ✅ Working | Swipe-friendly navigation and touch-optimized file inputs |
-| Offline Mode | ✅ Working | Core functionality works without internet via service worker cache |
+| Steganography Mode | ✅ Working | Hide AES-256-GCM encrypted data in PNG, BMP, lossless WebP, TIFF, and PCM WAV carriers |
+| Cryptography-only Mode | ❌ Not implemented | No route, UI, or `.stegcrypt` writer exists. References in `Help.tsx`, `About.tsx`, `Index.tsx`, `public/pricing.md`, `public/markdown-mirror.md`, `public/llm.txt`, and `public/llms.txt` are stale copy |
+| Password Generator | ✅ Working | Cryptographically secure generator with entropy meter; clipboard failures show an error toast |
+| Security Tools | ✅ Working | SHA hash generator, Base64, Hex, Binary, password generator, image converter on `/tools` |
+| Responsive Design | ✅ Working | Mobile-first layout; 2-column tool tabs; mobile navigation menu |
+| Dark Mode | ✅ Working | System theme detection with manual light/dark/system override |
+| Touch Input | ✅ Working | Tap targets and the drag/drop zone accept touch input |
+| Swipe Navigation | ❌ Not implemented | Navigation uses the menu button; there are no swipe page/route handlers |
+| Offline Mode | ✅ Working | Service worker pre-caches the app shell and same-origin static assets |
 | PWA Install | ✅ Working | Add to home screen on Android (Chrome) and iOS 17+ (Safari) |
-| Share Integration | ✅ Working | Files can be shared from the device's share sheet to StegCrypt |
-| Mobile File Limits | ✅ Working | Automatically enforces lower limits (20 MB) to prevent memory issues |
-| LSB Depth Lock | ✅ Working | Forced to LSB depth 1 on mobile for stability and performance |
+| Share Integration | ❌ Not implemented | No Web Share Target in `manifest.json` and no `navigator.share` usage |
+| Mobile File Limits | ⚠️ Not enforced in UI | `constants.ts` defines 20 MB carrier / 10 MB payload limits, but Encode/Decode dropzones use a hardcoded 100 MB carrier cap and 50 MB payload cap |
+| LSB Depth Lock | ✅ Enforced in logic | `getLsbDepthForPlatform` forces depth 1. The Decode selector still displays 2-4 in Expert Mode, but the effective depth is 1 and a warning is shown |
+| High Security Mode | ❌ Not exposed | The crypto worker's 310K-iteration flag exists, but no UI control sets it on any platform |
 
 ### Planned Features
 
@@ -27,10 +29,11 @@
 
 ## Mobile-Specific Behavior
 
-- **File Size Limits**: All files are capped at 20 MB on mobile to prevent out-of-memory errors.
-- **LSB Depth**: Fixed at 1 bit on mobile for optimal performance. (In Expert Mode users can see the restriction but not override it.)
-- **High Security Mode (310K PBKDF2)**: Disabled on mobile by default to prevent the browser from becoming unresponsive.
+- **File Size Limits**: `constants.ts` caps mobile carriers at 20 MB and payloads at 10 MB. These values are not currently applied by the Encode/Decode dropzones, so a mobile user can select a much larger file. Treat the constants as the intended policy, not an enforced guarantee.
+- **LSB Depth**: Fixed at 1 bit in the depth-resolution logic. On Decode, Expert Mode still renders the 1-4 selector; choosing 2-4 shows the "fixed to 1" warning and extraction uses depth 1.
+- **High Security Mode (310K PBKDF2)**: Not available in the UI on any platform. Encryption uses the worker default (100K unless the payload's flag bit says otherwise).
 - **Text Payload Only in Quick Mode**: File payload requires Expert Mode on all devices.
+- **Memory**: Processing needs roughly 3x the carrier size in RAM. Large files on mobile are the most likely source of out-of-memory failures.
 
 ---
 
@@ -38,15 +41,21 @@
 
 | Bug | Severity | Status | Notes |
 |-----|----------|--------|-------|
+| Mobile 20 MB limit not enforced | Medium | Open | Dropzones hardcode 100 MB; `validateCarrierFile`/`validatePayloadFile` are unused |
+| Decode LSB selector misleading on mobile | Low | Open | Options 2-4 remain visible in Expert Mode but resolve to depth 1 |
 | Soft keyboard overlap on iOS | Medium | In Progress | Input fields may be hidden by the virtual keyboard on some iPhone models |
-| 100vh height glitch on iOS Safari | Low | Investigating | Address bar show/hide causes layout shift on `/encode` and `/decode` pages |
-| TIFF files on iOS Safari | Medium | Platform Limitation | Safari on iOS may not support TIFF via canvas. Use PNG instead. |
+| 100vh height glitch on iOS Safari | Low | Investigating | Address bar show/hide causes layout shift on `/encode` and `/decode` |
+| TIFF files on iOS Safari | Medium | Platform Limitation | Safari on iOS may not decode TIFF via canvas. Use PNG instead. |
 | Overscroll bounce | Low | By Design | Android Chrome's overscroll effect may cause minor visual jitter |
 
 ### Recently Fixed
 
 - ~~Crash on device rotation while processing~~ ✅ Fixed
 - ~~Mobile menu not closing after navigation~~ ✅ Fixed
+- ~~Mobile mode toggle inaccessible on small screens~~ ✅ Fixed (mobile menu toggle added)
+- ~~Same file could not be selected twice after clearing~~ ✅ Fixed
+- ~~Oversized file errors appeared only as toasts/not at all~~ ✅ Fixed (inline dropzone errors)
+- ~~Download links could be revoked before the browser saved the file~~ ✅ Fixed
 
 ---
 
@@ -58,7 +67,7 @@
 - 100vh height inconsistency is a known browser limitation (affects layout slightly on address bar show/hide).
 
 ### Android Chrome
-- Full PWA support including install prompt and offline mode.
+- Full PWA support including install prompt and offline app shell.
 - Overscroll bounce (pull-to-refresh gesture) may conflict with in-app scroll on some views.
 
 ### Small Screens (< 360 px)
@@ -78,4 +87,4 @@
 
 ---
 
-*Last updated: 2026-04-11*
+*Last updated: 2026-10-20*
