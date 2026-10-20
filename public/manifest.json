@@ -4,7 +4,7 @@
   "description": "Hide encrypted secrets in plain sight. Browser-based steganography with military-grade encryption.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#121212",
   "theme_color": "#121212",
   "orientation": "any",
   "scope": "/",
