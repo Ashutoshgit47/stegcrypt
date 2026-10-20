@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Lock, Download, AlertTriangle, Info, Image, Music, Key } from 'lucide-react';
+import { Lock, Download, AlertTriangle, Info, Image, Music, Key, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -67,6 +67,8 @@ export default function Encode() {
   const [payloadFile, setPayloadFile] = useState<File | null>(null);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [lsbDepth, setLsbDepth] = useState('1');
   const [useArgon2, setUseArgon2] = useState(false);
   const [useCompression, setUseCompression] = useState(true);
@@ -99,14 +101,14 @@ export default function Encode() {
     isMobile ? 'mobile' : 'desktop'
   );
 
-  // Show mobile warning if LSB was forced
+  // Show mobile warning only if Expert Mode is active and LSB was forced
   useEffect(() => {
-    if (isMobile && effectiveLsbDepth.forced) {
+    if (isMobile && isExpertMode && effectiveLsbDepth.forced) {
       setMobileWarning(effectiveLsbDepth.message || WARNING_MESSAGES.mobileLsbForced);
     } else {
       setMobileWarning(null);
     }
-  }, [isMobile, effectiveLsbDepth]);
+  }, [isMobile, isExpertMode, effectiveLsbDepth]);
 
   // Recalculate capacity when LSB depth changes
   useEffect(() => {
@@ -399,7 +401,15 @@ export default function Encode() {
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="cyber-card">
-              <h2 className="font-black mb-4 uppercase tracking-wide">Carrier File</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black uppercase tracking-wide">Carrier File</h2>
+                {carrierType && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 border-[2px] border-[#121212] dark:border-white bg-[#D02020] text-white text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white]">
+                    {carrierType === 'image' ? <Image className="h-3 w-3 stroke-[3px]" /> : <Music className="h-3 w-3 stroke-[3px]" />}
+                    {carrierFile ? `${carrierFile.name.split('.').pop()?.toUpperCase()} ${carrierType === 'image' ? 'Image' : 'Audio'}` : (carrierType === 'image' ? 'Image' : 'Audio')}
+                  </div>
+                )}
+              </div>
                 <FileDropzone
                   accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
                   maxSize={100}
@@ -443,14 +453,46 @@ export default function Encode() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-xs font-black uppercase tracking-wide">Password</Label>
-                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="border-[2px] border-[#121212] dark:border-white rounded-none pr-10 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none p-1 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {password && password.length < 12 && (
                     <p className="text-[11px] font-bold text-[#D02020] animate-fade-in">Min 12 chars required ({password.length}/12)</p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password" className="text-xs font-black uppercase tracking-wide">Confirm</Label>
-                  <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="border-[2px] border-[#121212] dark:border-white rounded-none pr-10 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground focus:outline-none p-1 transition-colors"
+                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {confirmPassword && password !== confirmPassword && (
                     <p className="text-[11px] font-bold text-[#D02020] animate-fade-in">Passwords do not match</p>
                   )}
