@@ -10,6 +10,11 @@ const PRECACHE_ASSETS = [
   '/security',
   '/about',
   '/favicon.png',
+  '/favicon/favicon-96x96.png',
+  '/favicon/favicon.ico',
+  '/favicon/apple-touch-icon.png',
+  '/favicon/web-app-manifest-192x192.png',
+  '/favicon/web-app-manifest-512x512.png',
   '/manifest.json',
 ];
 

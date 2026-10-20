@@ -12,10 +12,22 @@
   "categories": ["productivity", "security", "utilities"],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/favicon/favicon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -24,21 +36,21 @@
       "short_name": "Encode",
       "description": "Hide encrypted data in a file",
       "url": "/encode",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Decode",
       "short_name": "Decode",
       "description": "Extract hidden data from a file",
       "url": "/decode",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Tools",
       "short_name": "Tools",
       "description": "Security tools: hash, base64, password generator",
       "url": "/tools",
-      "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+      "icons": [{ "src": "/favicon/web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ],
   "prefer_related_applications": false
