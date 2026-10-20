@@ -74,15 +74,31 @@ Scope: user-visible failures found during a full code read-through. No new featu
 - **Payload errors (`src/lib/payload-helper.ts`)**
   - Replaced `new Error(message, { cause })` (not in the project's TS lib target) with a DEV-only `console.warn` plus a plain `Error`.
 - **Favicon and PWA icons (`index.html`, `public/manifest.json`, `public/favicon/`)**
-  - Moved the provided icon set into `public/favicon/` so Vite copies it into `dist/`.
+  - Moved the provided icon set into `public/` and `public/favicon/` so Vite copies it into `dist/`.
   - Linked the 96x96 PNG, SVG, ICO, and 180x180 Apple touch icon. The original generated `favicon.svg` was a 61 KB `foreignObject`/HTML snapshot that rendered blank in Chrome; it was replaced with a clean 64x64 vector version of the same folder-and-lock icon.
+  - Added `@media (prefers-color-scheme: dark)` styling to `favicon.svg` so browser tabs adapt to system theme.
   - Updated the web manifest to use the 96/192/512 PNG icons and fixed the shortcut icon metadata.
   - Added the new icons to the service worker precache list.
+- **Hero Title Line-Wrap Artifact (`src/pages/Index.tsx`)**
+  - Resolved floating 1px red sliver artifact caused by leading whitespace inside `<span className="bg-[#D02020]"> Plain</span>` wrapping onto a new line.
+  - Converted `PLAIN` and `SIGHT` into isolated `inline-block` Bauhaus badges with explicit drop-shadows.
+  - Adjusted container vertical padding from `py-16 md:py-24` to fluid `py-12 md:py-16 lg:py-20` so the "CHOOSE YOUR MODE" section remains visible above the fold without 50% truncation.
+- **Theme-Adaptive Logo & Tab Favicon (`src/components/shared/StegCryptLogo.tsx`, `src/contexts/ThemeContext.tsx`, `src/components/layout/Header.tsx`)**
+  - Created SVG component `StegCryptLogo.tsx` with light/dark adaptive stroke and fill colors.
+  - Replaced static `<img>` tag in `Header.tsx` with `StegCryptLogo` to dynamically update when user toggles Light/Dark/System theme.
+  - Wired `ThemeContext.tsx` to dynamically update `<link rel="icon">` using data-URIs matching active theme.
+- **Author Portfolio & Ko-fi Support CTAs (`src/pages/About.tsx`, `src/components/layout/Footer.tsx`)**
+  - Replaced GitHub Profile button in `About.tsx` with Portfolio link to `https://ashutosh47.pages.dev/` with Globe icon.
+  - Replaced "No Upload" badge in `Footer.tsx` with Bauhaus Neo-Brutalist Ko-fi support button (`#72a4f2`, `Coffee` icon) linking to `https://ko-fi.com/Y8Y11V9RQ2`.
+  - Updated author URL in `index.html` schema to portfolio link.
+- **License & Documentation De-slopping (`LICENSE`, `README.md`)**
+  - Restored truncated standard MIT License text and updated copyright holder to Ashutosh Gautam.
+  - De-slopped `README.md` to remove AI hype words and emoji clutter, scoring a clean 5/5 under `deslop.py`.
 
 ### Verification
 
-- `npx eslint src`: 0 errors, 9 pre-existing fast-refresh warnings.
-- `npm run build`: passes.
+- `npm run lint`: 0 errors, 9 pre-existing fast-refresh warnings.
+- `npm run build`: passes in 1.5s with 0 errors.
 - `npx tsc --noEmit`: application code clean; only the pre-existing `src/components/ui/chart.tsx`, `calendar.tsx`, and `resizable.tsx` errors remain.
 - Node round-trip harness (esbuild bundle of `wav-codec`, `payload-helper`, `crypto`): 18/18 assertions pass, covering WAV encode/decode, LSB 1-4 embed/extract, oversized `data` chunk clamping, bogus `fmt` rejection, payload packing, filename sanitization, legacy passthrough, and bounds checks.
 

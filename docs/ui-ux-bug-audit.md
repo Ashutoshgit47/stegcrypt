@@ -130,15 +130,40 @@ Line numbers below refer to the original audit and may have drifted. Each item h
 - **Issue**: Card grid could produce uneven heights with different content lengths.
 - **Status (2026-10-20)**: **RESOLVED**. Cards size naturally within the grid; no fixed height is applied. Rows align to the tallest card, which is expected grid behavior.
 
+### Visual #4: Hero Title Line-Wrap Artifact
+- **Location**: Index.tsx
+- **Issue**: Leading whitespace inside `<span className="bg-[#D02020]"> Plain</span>` caused a stray 1px red sliver on wrap.
+- **Status (2026-10-20)**: **FIXED**. Wrapped `PLAIN` and `SIGHT` in standalone `inline-block` badges with isolated shadow boxes.
+
+### Visual #5: Header Logo Theme Inconsistency
+- **Location**: Header.tsx
+- **Issue**: Logo was a static `<img src="/favicon.svg" />` that remained a dark block in light theme.
+- **Status (2026-10-20)**: **FIXED**. Replaced with `StegCryptLogo` SVG component dynamically reacting to `.dark` class.
+
+### Visual #6: Browser Tab Favicon Invisible in Dark Tabs
+- **Location**: public/favicon.svg, index.html, ThemeContext.tsx
+- **Issue**: Dark favicon lacked contrast border in dark tabs; `foreignObject` was dropped by browsers.
+- **Status (2026-10-20)**: **FIXED**. Clean vector SVG with `@media (prefers-color-scheme)` plus dynamic data-URI in `ThemeContext.tsx`.
+
+### Visual #7: Missing Author Portfolio Link
+- **Location**: About.tsx
+- **Issue**: About card linked GitHub user profile rather than dedicated portfolio.
+- **Status (2026-10-20)**: **FIXED**. Replaced with Portfolio link to `https://ashutosh47.pages.dev/`.
+
+### Visual #8: Footer Support CTA
+- **Location**: Footer.tsx
+- **Issue**: Center badge group lacked a donation/support channel.
+- **Status (2026-10-20)**: **FIXED**. Replaced static "No Upload" badge with styled Bauhaus "Ko-fi" button linking to `https://ko-fi.com/Y8Y11V9RQ2`.
+
 ---
 
 ## Summary (2026-10-20)
 
 | Status | Count |
 |--------|-------|
-| Fixed / resolved | 16 |
+| Fixed / resolved | 22 |
 | By design | 1 |
 | Open (low priority) | 5 |
-| **Total** | **22** |
+| **Total** | **28** |
 
 Open items: dark-mode icon swap (#9), loading-state consistency (#13), image-converter progress (#15), duplicate dead Tailwind config (CSS #1, #4).

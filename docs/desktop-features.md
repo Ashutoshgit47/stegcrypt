@@ -12,7 +12,9 @@
 | Carrier Size Limits | ⚠️ Partial | Dropzones cap all carriers at 100 MB and payloads at 50 MB. The 200 MB desktop audio limit in `constants.ts` is not wired to the UI |
 | Expert Mode | ⚠️ Partial | File payloads work. LSB depth 2-4 is selectable only on Decode; Encode has no depth selector. High Security/Argon2 toggles are not exposed |
 | Encryption | ✅ Working | AES-256-GCM with PBKDF2-SHA256. Default 100K iterations; the worker supports a 310K flag but no UI sets it |
-| Dark / Light Mode | ✅ Working | Light, dark, and system themes |
+| Dark / Light Mode | ✅ Working | Light, dark, and system themes with theme-adaptive SVG logo and dynamic browser tab favicon |
+| Theme-Adaptive Logo | ✅ Working | Vector SVG logo dynamically adapts stroke, fill, and opacity to active theme in header and tab |
+| Author Portfolio & Ko-fi | ✅ Working | Dedicated Portfolio link on About page; styled Bauhaus Ko-fi button in footer |
 | Keyboard Navigation | ⚠️ Partial | Focus-visible styles on navigation, tabs, and the dropzone. No formal accessibility audit |
 | PWA Install | ✅ Working | Installable; service worker registered from `index.html` for offline caching |
 | Multi-window Support | ✅ Working | Independent browser tabs/sessions |
@@ -42,6 +44,12 @@
 
 ### Recently Fixed
 
+- ~~Hero title line-wrap 1px red sliver artifact~~ ✅ Fixed (isolated inline-block badges)
+- ~~Header logo static dark block in light theme~~ ✅ Fixed (`StegCryptLogo` SVG)
+- ~~Browser tab favicon dark mode contrast and foreignObject breakage~~ ✅ Fixed (pure vector SVG + dynamic data-URI)
+- ~~About page linked generic GitHub profile instead of portfolio~~ ✅ Fixed (links `https://ashutosh47.pages.dev/`)
+- ~~Footer lacked donation/support CTA~~ ✅ Fixed (links `https://ko-fi.com/Y8Y11V9RQ2`)
+- ~~Truncated MIT license text~~ ✅ Fixed
 - ~~Tooltip positioning on resize~~ ✅ Fixed
 - ~~Payload capacity calculation overhead~~ ✅ Fixed (110-byte overhead accounted for)
 - ~~BMP output not downloading correctly~~ ✅ Fixed

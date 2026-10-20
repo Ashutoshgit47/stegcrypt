@@ -6,10 +6,11 @@
 **Industry**: Security/Privacy Tools  
 **Analyst**: AI SEO Specialist
 
-> **Implementation update (2026-10-20)**: The three critical fixes from this audit are now in the codebase:
-> - `public/robots.txt` has explicit AI crawler entries.
+> **Implementation update (2026-10-20)**: The core AI SEO and structured data recommendations are in the codebase:
+> - `public/robots.txt` has explicit AI crawler entries (GPTBot, ClaudeBot, PerplexityBot, etc.).
 > - `Help.tsx` generates FAQPage JSON-LD from its `faqs` array and passes it to `PageSEO`.
 > - `Encode.tsx` and `Decode.tsx` each emit HowTo schema.
+> - `About.tsx` and `index.html` emit WebApplication and AboutPage schema with author portfolio (`https://ashutosh47.pages.dev/`).
 >
 > The original findings and recommendations are retained below for history. Open items are marked in the priority list.
 

@@ -50,6 +50,11 @@
 
 ### Recently Fixed
 
+- ~~Hero text wrap and fold truncation on small viewports~~ ✅ Fixed (fluid padding `py-12 md:py-16 lg:py-20` and isolated inline badges)
+- ~~Header logo static dark block in mobile light theme~~ ✅ Fixed (`StegCryptLogo` SVG)
+- ~~Mobile tab favicon dark theme contrast and missing webmanifest background~~ ✅ Fixed (`#121212` PWA manifest color + vector SVG)
+- ~~Mobile About page CTA pointed to generic GitHub profile~~ ✅ Fixed (links author portfolio `https://ashutosh47.pages.dev/`)
+- ~~Mobile footer lacked support link~~ ✅ Fixed (styled Bauhaus Ko-fi button `https://ko-fi.com/Y8Y11V9RQ2`)
 - ~~Crash on device rotation while processing~~ ✅ Fixed
 - ~~Mobile menu not closing after navigation~~ ✅ Fixed
 - ~~Mobile mode toggle inaccessible on small screens~~ ✅ Fixed (mobile menu toggle added)
