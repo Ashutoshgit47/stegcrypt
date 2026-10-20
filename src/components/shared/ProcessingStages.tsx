@@ -27,9 +27,13 @@ const decodeStages: { id: ProcessingStage; label: string }[] = [
 
 export function ProcessingStages({ currentStage, completedStages, mode }: ProcessingStagesProps) {
   const stages = mode === 'encode' ? encodeStages : decodeStages;
+  const activeStageObj = stages.find(s => s.id === currentStage);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" role="status" aria-live="polite">
+      <span className="sr-only">
+        {activeStageObj ? `Current processing step: ${activeStageObj.label}` : 'Processing idle'}
+      </span>
       {stages.map((stage, index) => {
         const isCompleted = completedStages.includes(stage.id);
         const isCurrent   = currentStage === stage.id;

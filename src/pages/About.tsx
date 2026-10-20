@@ -34,6 +34,23 @@ export default function About() {
         title="About StegCrypt"
         description="Learn about StegCrypt - a privacy-first steganography and cryptography tool for hiding encrypted messages in images and audio. Built by Ashutosh Gautam with security and transparency in mind."
         path="/about"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'AboutPage',
+          'name': 'About StegCrypt',
+          'description': 'Information about StegCrypt, a privacy-first steganography tool created by Ashutosh Gautam to enable zero-knowledge secret hiding directly in web browsers.',
+          'mainEntity': {
+            '@type': 'SoftwareApplication',
+            'name': 'StegCrypt',
+            'applicationCategory': 'SecurityApplication',
+            'operatingSystem': 'Browser',
+            'creator': {
+              '@type': 'Person',
+              'name': 'Ashutosh Gautam',
+              'url': 'https://github.com/Ashutoshgit47'
+            }
+          }
+        }}
       />
 
       {/* Hero */}

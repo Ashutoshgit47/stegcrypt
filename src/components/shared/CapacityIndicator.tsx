@@ -63,9 +63,9 @@ export function CapacityIndicator({ used, total, className }: CapacityIndicatorP
           style={{ width: `${percentage}%` }}
         />
         {/* Zone markers at 50% and 80% */}
-        <div className="absolute inset-0 flex pointer-events-none">
-          <div className="w-1/2 border-r-[2px] border-[#121212]/30 dark:border-white/30" />
-          <div className="w-[30%] border-r-[2px] border-[#121212]/30 dark:border-white/30" />
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 bottom-0 left-1/2 border-r-[2px] border-[#121212]/30 dark:border-white/30" />
+          <div className="absolute top-0 bottom-0 left-[80%] border-r-[2px] border-[#121212]/30 dark:border-white/30" />
         </div>
       </div>
 

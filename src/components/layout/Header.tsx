@@ -128,7 +128,28 @@ export function Header() {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-border bg-background animate-fade-in">
-          <nav className="container py-4 flex flex-col gap-1">
+          <nav className="container py-4 flex flex-col gap-2">
+            {/* Mobile Mode Toggle (Bug #1 Fix) */}
+            <div className="flex items-center justify-between px-4 py-3 mb-1 border-2 border-[#121212] dark:border-white bg-secondary/30">
+              <span className="text-xs font-black uppercase tracking-widest">Active Mode</span>
+              <button
+                type="button"
+                onClick={() => setMode(mode === 'expert' ? 'quick' : 'expert')}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-none text-xs font-black uppercase tracking-widest border-2 transition-all shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white] active:translate-x-0.5 active:translate-y-0.5',
+                  mode === 'expert'
+                    ? 'bg-[#F0C020] text-[#121212] border-[#121212] dark:border-white'
+                    : 'bg-[#1040C0] text-white border-[#121212] dark:border-white'
+                )}
+              >
+                <div className={cn(
+                  'h-2 w-2 border-2 border-current',
+                  mode === 'expert' ? 'bg-[#121212]' : 'bg-white'
+                )} />
+                {mode === 'expert' ? 'Expert' : 'Quick'}
+              </button>
+            </div>
+
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -138,7 +159,7 @@ export function Header() {
                   to={item.path}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-6 py-4 rounded-none text-sm font-black uppercase tracking-widest border-2 transition-all',
+                    'flex items-center gap-3 px-5 py-3.5 rounded-none text-sm font-black uppercase tracking-widest border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D02020]',
                     isActive
                       ? 'bauhaus-bg-red border-[#121212] dark:border-white shadow-[3px_3px_0px_0px_#121212] dark:shadow-[3px_3px_0px_0px_white]'
                       : 'text-muted-foreground border-transparent hover:text-foreground hover:bg-secondary hover:border-[#121212] dark:hover:border-white'
@@ -155,7 +176,7 @@ export function Header() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-6 py-4 rounded-none text-sm font-black uppercase tracking-widest border-[3px] border-[#121212] dark:border-white bg-[#F0C020] text-[#121212] transition-all shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white]"
+              className="flex items-center gap-3 px-5 py-3.5 rounded-none text-sm font-black uppercase tracking-widest border-[3px] border-[#121212] dark:border-white bg-[#F0C020] text-[#121212] transition-all shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D02020]"
             >
               <Bug className="h-5 w-5 stroke-[2.5px]" />
               REPORT

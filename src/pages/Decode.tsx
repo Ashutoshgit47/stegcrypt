@@ -205,11 +205,30 @@ export default function Decode() {
   };
 
   const handleCopy = async () => {
-    if (decodedText) {
-      await navigator.clipboard.writeText(decodedText);
+    if (!decodedText) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(decodedText);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = decodedText;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       toast({ title: 'Copied to clipboard' });
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Copy failed',
+        description: 'Clipboard access denied. Please select and copy text manually.'
+      });
     }
   };
 
@@ -224,6 +243,35 @@ export default function Decode() {
     }
   };
 
+  const decodeSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    'name': 'How to Extract and Decrypt Hidden Data from Files with StegCrypt',
+    'description': 'Step-by-step instructions for extracting encrypted secrets hidden inside image or audio carrier files in your browser.',
+    'step': [
+      {
+        '@type': 'HowToStep',
+        'name': 'Upload Stego File',
+        'text': 'Upload the carrier file (PNG, BMP, WebP, TIFF, or WAV) containing hidden data.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'Enter Decryption Password',
+        'text': 'Type the password used during the original encoding process to derive the AES-256-GCM key.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'Decode & Decrypt',
+        'text': 'Click Decode to run client-side extraction and cryptographic integrity verification.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'View or Download Payload',
+        'text': 'Read the decrypted text message or download the recovered payload file.'
+      }
+    ]
+  };
+
   const canDecode = stegoFile && carrierType && password;
 
   return (
@@ -232,6 +280,7 @@ export default function Decode() {
         title="Decode"
         description="Extract and decrypt hidden data from steganographic images or audio files. Secure AES-256 decryption with 100% local processing."
         path="/decode"
+        schema={decodeSchema}
       />
       <div className="max-w-4xl mx-auto">
         {/* Mobile Warning */}
@@ -318,7 +367,7 @@ export default function Decode() {
             </div>
 
             {/* Output */}
-            {(decodedText || decodedBlob) && (
+            {decodedText || decodedBlob ? (
               <div className="cyber-card border-[3px] border-[#1040C0] dark:border-[#6080F0] shadow-[6px_6px_0px_0px_#1040C0] dark:shadow-[6px_6px_0px_0px_#6080F0] animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <h2 className="font-black mb-4 uppercase tracking-wide text-[#1040C0] dark:text-[#6080F0]">Decoded Output</h2>
 
@@ -329,31 +378,37 @@ export default function Decode() {
                       readOnly
                       className="min-h-[150px] font-mono border-[2px] border-[#121212] dark:border-white bg-background rounded-none"
                     />
-                    <button
+                    <Button
                       onClick={handleCopy}
-                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#121212] dark:bg-white text-white dark:text-[#121212] font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#1040C0] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#121212] dark:bg-white text-white dark:text-[#121212] font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#1040C0] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-none"
                     >
                       {copied ? (
                         <><Check className="h-4 w-4 stroke-[3px]" />Copied!</>
                       ) : (
                         <><Copy className="h-4 w-4 stroke-[3px]" />Copy to Clipboard</>
                       )}
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <p className="text-sm font-bold opacity-70 italic">
                       Binary data detected. Download to recover the hidden file.
                     </p>
-                    <button
+                    <Button
                       onClick={handleDownload}
-                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+                      className="flex items-center gap-2 px-6 py-2 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white font-black uppercase tracking-widest text-xs shadow-[4px_4px_0px_0px_#121212] dark:shadow-[4px_4px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-none"
                     >
                       <Download className="h-4 w-4 stroke-[3px]" />
                       Download File
-                    </button>
+                    </Button>
                   </div>
                 )}
+              </div>
+            ) : (
+              <div className="cyber-card border-dashed opacity-70 text-center py-6">
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">
+                  Decoded message or recovered file will appear here after decryption
+                </p>
               </div>
             )}
           </div>
@@ -373,8 +428,9 @@ export default function Decode() {
             )}
 
             {/* Decode Button */}
-            <button
-              className="w-full flex items-center justify-center gap-2 py-4 border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white font-black uppercase tracking-widest text-base shadow-[8px_8px_0px_0px_#121212] dark:shadow-[8px_8px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
+            <Button
+              size="lg"
+              className="w-full gap-2 min-h-[3.5rem] py-3 text-base font-black uppercase tracking-[0.15em] border-[3px] border-[#121212] dark:border-white bg-[#1040C0] text-white shadow-[8px_8px_0px_0px_#121212] dark:shadow-[8px_8px_0px_0px_white] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed rounded-none"
               disabled={!canDecode || isProcessing}
               onClick={handleDecode}
             >
@@ -383,7 +439,7 @@ export default function Decode() {
               ) : (
                 <><Unlock className="h-5 w-5 stroke-[3px] flex-shrink-0" /><span>Decode</span></>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

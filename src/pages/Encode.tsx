@@ -337,7 +337,36 @@ export default function Encode() {
     toast({ title: 'Password Generated', description: 'A secure 16-character password has been applied.' });
   };
 
-  const canEncode = carrierFile && carrierType && (payloadText || payloadFile) && password && password === confirmPassword;
+  const encodeSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    'name': 'How to Hide Encrypted Secret Data in Files (Steganography)',
+    'description': 'Step-by-step guide to hiding AES-256-GCM encrypted messages or files inside PNG, BMP, WebP, TIFF, or WAV carrier files with StegCrypt.',
+    'step': [
+      {
+        '@type': 'HowToStep',
+        'name': 'Select Carrier File',
+        'text': 'Upload a lossless carrier file such as PNG, BMP, lossless WebP, TIFF image, or WAV audio.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'Enter Payload',
+        'text': 'Type the secret text message or upload a confidential payload file.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'Set Encryption Password',
+        'text': 'Enter a secure password (minimum 12 characters) or generate one using the built-in cryptographically secure generator.'
+      },
+      {
+        '@type': 'HowToStep',
+        'name': 'Encode & Download',
+        'text': 'Execute local LSB steganographic embedding and download the carrier file.'
+      }
+    ]
+  };
+
+  const canEncode = carrierFile && carrierType && (payloadText || payloadFile) && password && password === confirmPassword && password.length >= 12;
 
   return (
     <div className="container py-8 md:py-12 animate-fade-in">
@@ -345,6 +374,7 @@ export default function Encode() {
         title="Encode"
         description="Hide encrypted data within images or audio files using LSB steganography."
         path="/encode"
+        schema={encodeSchema}
       />
       <div className="max-w-4xl mx-auto">
         {mobileWarning && (
@@ -414,10 +444,16 @@ export default function Encode() {
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-xs font-black uppercase tracking-wide">Password</Label>
                   <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
+                  {password && password.length < 12 && (
+                    <p className="text-[11px] font-bold text-[#D02020] animate-fade-in">Min 12 chars required ({password.length}/12)</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password" className="text-xs font-black uppercase tracking-wide">Confirm</Label>
                   <Input id="confirm-password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="border-[2px] border-[#121212] dark:border-white" />
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-[11px] font-bold text-[#D02020] animate-fade-in">Passwords do not match</p>
+                  )}
                 </div>
               </div>
             </div>

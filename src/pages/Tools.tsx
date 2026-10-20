@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Hash, Binary, RefreshCw, Check, Copy, Key, FileText, Shield, Lock, Code
 } from 'lucide-react';
@@ -35,14 +36,41 @@ function bufToHex(buf: ArrayBuffer): string {
 
 function CopyButton({ text, className = '' }: { text: string; className?: string }) {
   const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
   const handleCopy = async () => {
     if (!text) return;
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Copy failed',
+        description: 'Unable to access clipboard. Please copy manually.'
+      });
+    }
   };
   return (
-    <Button variant="outline" size="sm" onClick={handleCopy} className={`gap-2 rounded-none border-[2px] border-[#121212] dark:border-white shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${className}`}>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      aria-label="Copy to clipboard"
+      className={`gap-2 rounded-none border-[2px] border-[#121212] dark:border-white shadow-[2px_2px_0px_0px_#121212] dark:shadow-[2px_2px_0px_0px_white] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] transition-all ${className}`}
+    >
       {copied ? <><Check className="h-3.5 w-3.5 stroke-[3px]" />Copied</> : <><Copy className="h-3.5 w-3.5 stroke-[3px]" />Copy</>}
     </Button>
   );
@@ -510,10 +538,30 @@ function PasswordGeneratorTool() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
-        <Label>Length: {length}</Label>
+        <Label htmlFor="password-length">Length: {length}</Label>
         <div className="flex items-center gap-4">
-           <input type="range" min="8" max="64" value={length} onChange={e => setLength(Number(e.target.value))} className="w-full accent-primary" />
-           <Input type="number" min="8" max="64" value={length} onChange={e => setLength(Number(e.target.value))} className="w-20 font-mono" />
+           <input
+             id="password-length"
+             type="range"
+             min="8"
+             max="64"
+             value={length}
+             aria-label="Password length slider"
+             aria-valuemin={8}
+             aria-valuemax={64}
+             aria-valuenow={length}
+             onChange={e => setLength(Number(e.target.value))}
+             className="w-full accent-primary"
+           />
+           <Input
+             type="number"
+             min="8"
+             max="64"
+             value={length}
+             aria-label="Password length number input"
+             onChange={e => setLength(Number(e.target.value))}
+             className="w-20 font-mono"
+           />
         </div>
       </div>
       <Button 
@@ -547,12 +595,43 @@ const TOOLS = [
 ];
 
 export default function Tools() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentTab = searchParams.get('tab') || 'image-converter';
+  const validTab = TOOLS.some(t => t.id === currentTab) ? currentTab : 'image-converter';
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value }, { replace: true });
+  };
+
+  const toolsSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    'name': 'StegCrypt Security & Privacy Tools',
+    'url': 'https://stegcrypt.app/tools',
+    'applicationCategory': 'SecurityApplication',
+    'operatingSystem': 'All',
+    'offers': {
+      '@type': 'Offer',
+      'price': '0',
+      'priceCurrency': 'USD'
+    },
+    'featureList': [
+      'Image Format Converter (PNG, WebP, JPEG, BMP)',
+      'SHA Hash Generator (SHA-1, SHA-256, SHA-384, SHA-512)',
+      'Base64 Encoder and Decoder (UTF-8 safe)',
+      'Binary Text Converter',
+      'Cryptographically Secure Password Generator',
+      'Hexadecimal Text Converter'
+    ]
+  };
+
   return (
     <div className="container py-8 md:py-12 animate-fade-in">
       <PageSEO
         title="Security Tools"
         description="Free browser-based security tools: SHA hash generator, Base64 encoder/decoder, secure password generator, and hex converter. All processing is 100% local."
         path="/tools"
+        schema={toolsSchema}
       />
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -568,8 +647,8 @@ export default function Tools() {
         </div>
 
         {/* Tools Tabs */}
-        <Tabs defaultValue="image-converter" className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
+        <Tabs value={validTab} onValueChange={handleTabChange} className="space-y-6">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0" aria-label="Security utilities tabs">
             {TOOLS.map((tool) => {
               const Icon = tool.icon;
               return (

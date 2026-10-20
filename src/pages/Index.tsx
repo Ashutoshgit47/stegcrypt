@@ -63,6 +63,28 @@ export default function Index() {
         title="StegCrypt - Hide Secrets in Plain Sight"
         description="Browser-based steganography with military-grade encryption. Hide encrypted data in images and audio files. 100% local processing - your data never leaves your device."
         path="/"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          'name': 'StegCrypt',
+          'url': 'https://stegcrypt.app',
+          'applicationCategory': 'SecurityApplication',
+          'operatingSystem': 'All modern browsers (Chrome, Firefox, Safari, Edge)',
+          'browserRequirements': 'Requires JavaScript. Requires Web Crypto API and HTML5 Canvas.',
+          'offers': {
+            '@type': 'Offer',
+            'price': '0',
+            'priceCurrency': 'USD'
+          },
+          'description': 'Browser-based steganography with military-grade AES-256-GCM encryption. Hide encrypted text, credentials, and files in PNG, BMP, WebP, TIFF, and WAV carriers 100% locally.',
+          'featureList': [
+            'AES-256-GCM encryption with PBKDF2 key derivation',
+            'LSB steganography for PNG, BMP, WebP, TIFF, and WAV audio',
+            '100% client-side zero-knowledge offline processing',
+            'Built-in cryptographically secure password generator',
+            'Integrated cryptographic tools: SHA-256, Base64, Hex conversion'
+          ]
+        }}
       />
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b-[3px] border-[#121212] dark:border-white">

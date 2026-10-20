@@ -85,12 +85,26 @@ const sizeLimits = [
 ];
 
 export default function Help() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    'mainEntity': faqs.map(faq => ({
+      '@type': 'Question',
+      'name': faq.question,
+      'acceptedAnswer': {
+        '@type': 'Answer',
+        'text': faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="container py-8 md:py-12 animate-fade-in">
       <PageSEO
         title="Help & Documentation"
         description="Learn how to use StegCrypt for secure steganography and encryption. Complete guide on encoding, decoding, file formats, the password generator, security tools, and best practices."
         path="/help"
+        schema={faqSchema}
       />
       <div className="max-w-4xl mx-auto">
         {/* Header */}

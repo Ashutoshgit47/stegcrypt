@@ -1,0 +1,295 @@
+# StegCrypt - LLM-Optimized Documentation
+
+## Project Overview
+StegCrypt is a client-side web application for steganography and cryptography. It allows users to hide encrypted data within images and audio files using LSB (Least Significant Bit) steganography.
+
+## Core Features
+
+### 1. Steganography (Encode/Decode)
+- **LSB Embedding**: Hides data in the least significant bits of image pixels or audio samples
+- **Supported Formats**:
+  - Images: PNG, BMP, WebP (lossless), TIFF
+  - Audio: WAV (PCM)
+- **Configurable LSB Depth**: 1-4 bits (1 = most secure, 4 = highest capacity)
+- **Capacity Analysis**: Real-time calculation of maximum data capacity
+
+### 2. Cryptography
+- **Encryption**: AES-256-GCM (Authenticated Encryption with Associated Data)
+- **Key Derivation**: PBKDF2-SHA256
+  - Standard mode: 100,000 iterations
+  - High security mode: 310,000 iterations
+- **Compression**: Optional gzip compression before encryption
+- **Output Format**: Custom `.stegcrypt` binary format
+
+### 3. Security Tools
+- **Password Generator**: Cryptographically secure random passwords
+- **Entropy Meter**: Real-time password strength calculation
+- **Hash Generator**: SHA-1, SHA-256, SHA-384, SHA-512
+- **Base64 Encoder/Decoder**: UTF-8 safe encoding/decoding
+- **Binary Converter**: Text ↔ Binary (010101) conversion
+- **Hex Converter**: Text ↔ Hexadecimal conversion
+- **Image Converter**: Format conversion (PNG, WebP, JPEG)
+
+## Architecture
+
+### Technology Stack
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS with custom Bauhaus-inspired design
+- **UI Components**: shadcn/ui (Radix UI primitives)
+- **Web Workers**: Background processing for crypto/steganography
+- **WASM**: Optional performance optimizations
+
+### Key Files
+
+#### Workers (`src/workers/`)
+- `crypto.worker.ts`: Encryption/decryption operations
+- `steg.worker.ts`: Steganography embedding/extraction
+- `worker-client.ts`: Main thread API for worker communication
+
+#### Core Libraries (`src/lib/`)
+- `crypto.ts`: Web Crypto API wrapper
+- `steganography.ts`: LSB steganography implementation
+- `payload-helper.ts`: Metadata packaging
+- `file-validator.ts`: Input validation and sanitization
+- `wav-codec.ts`: WAV audio processing
+- `png-encoder.ts`: Pure JS PNG encoder
+- `bmp-codec.ts`: BMP image processing
+- `webp-codec.ts`: WebP lossless detection
+- `tiff-codec.ts`: TIFF image processing
+
+#### Pages (`src/pages/`)
+- `Index.tsx`: Landing page with mode selector
+- `Encode.tsx`: Steganography + cryptography encoding
+- `Decode.tsx`: Data extraction and decryption
+- `Tools.tsx`: Security utilities
+- `Security.tsx`: Security documentation
+- `Help.tsx`: User guide
+- `About.tsx`: Project information
+
+## Security Model
+
+### Threat Model
+- **Client-Side Only**: All processing happens in the browser
+- **No Server Communication**: Zero data transmission
+- **No Logging**: No telemetry or analytics
+- **Open Source**: Fully auditable codebase
+
+### Cryptographic Security
+- **AES-256-GCM**: Industry-standard authenticated encryption
+- **Random Salt**: 128-bit cryptographically random salt
+- **Random IV**: 96-bit initialization vector
+- **Password Requirements**: Minimum 12 characters
+- **Timing Attack Protection**: Constant-time comparisons
+
+### Known Limitations
+1. **Client-Side Security**: Compromised device = compromised security
+2. **Steganalysis Risk**: LSB embedding is detectable by advanced tools
+3. **No Integrity Verification**: Carrier files not checked for existing hidden data
+4. **Memory Limitations**: Large files may cause browser memory issues
+
+## API Reference
+
+### Encryption/Decryption
+
+```typescript
+interface EncryptOptions {
+  payload: ArrayBuffer;
+  password: string;
+  useArgon2?: boolean; // High security mode
+  compress?: boolean;
+  onProgress?: (progress: number, stage: string) => void;
+}
+
+// Returns: { promise: Promise<ArrayBuffer>, cancel: () => void }
+encryptInWorker(options: EncryptOptions)
+
+// Decryption
+decryptInWorker({
+  ciphertext: ArrayBuffer,
+  password: string,
+  onProgress?: (progress: number, stage: string) => void
+})
+```
+
+### Steganography
+
+```typescript
+// Analyze carrier capacity
+analyzeImageCapacity(imageData: ImageData, lsbDepth: number): {
+  width: number;
+  height: number;
+  channels: number;
+  maxCapacityBytes: number;
+  format: string;
+}
+
+// Embed data into image
+embedData(imageData: ImageData, payload: ArrayBuffer, lsbDepth: number): {
+  data: Uint8ClampedArray;
+  width: number;
+  height: number;
+}
+
+// Extract hidden data
+extractData(imageData: ImageData, lsbDepth: number): ArrayBuffer | null
+```
+
+### File Validation
+
+```typescript
+validateCarrierFile(file: File): {
+  valid: boolean;
+  error?: string;
+  type?: 'image' | 'audio';
+}
+
+validatePayloadFile(file: File): {
+  valid: boolean;
+  error?: string;
+  size?: number;
+}
+```
+
+## Performance Considerations
+
+### Optimizations Implemented
+- **Web Workers**: Crypto and steganography run in background threads
+- **Typed Arrays**: Pre-allocated buffers for bit extraction (10-30% faster)
+- **Efficient Array Copies**: Using `TypedArray.set()` instead of loops
+- **Lazy WASM Loading**: Load modules only when needed
+
+### Mobile Limitations
+- **File Size Limits**: 
+  - Images: 20MB (mobile) / 100MB (desktop)
+  - Audio: 20MB (mobile) / 200MB (desktop)
+  - Payload: 20MB (mobile) / 50MB (desktop)
+- **LSB Depth**: Forced to 1 bit on mobile for performance
+- **Memory Pressure**: Large files may crash on low-end devices
+
+## Browser Compatibility
+
+### Minimum Requirements
+- **Modern Browser**: Chrome 90+, Firefox 90+, Safari 15+, Edge 90+
+- **Web Crypto API**: Required for AES-GCM and PBKDF2
+- **Web Workers**: Required for background processing
+- **CompressionStream API**: Optional (for compression feature)
+
+### Unsupported Browsers
+- Internet Explorer (all versions)
+- Chrome < 90
+- Firefox < 90
+- Safari < 15
+
+## Error Handling
+
+### User-Facing Errors
+- Wrong password: "Decryption failed - wrong password or corrupted data"
+- No hidden data: "No hidden data found. Verify you're using the correct file and LSB depth"
+- File too large: "Payload too large for the carrier file"
+- Invalid format: "Unsupported format. Please use PNG, BMP, WebP (lossless), TIFF, or WAV"
+
+### Development Errors
+- All errors logged to console in dev mode
+- Worker crashes handled gracefully with job rejection
+- Memory errors caught and reported to user
+
+## Development Setup
+
+### Prerequisites
+- Node.js 18+
+- npm 9+
+
+### Installation
+```bash
+git clone https://github.com/Ashutoshgit47/stegcrypt.git
+cd stegcrypt
+npm install
+npm run dev
+```
+
+### Build
+```bash
+npm run build
+```
+
+### Test
+```bash
+npm run lint
+npm run typecheck
+```
+
+## Deployment
+
+### Cloudflare Pages
+1. Build: `npm run build`
+2. Deploy: Upload `dist/` directory
+3. Configure headers (see `_headers` file)
+
+### Security Headers Required
+```
+Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
+## Known Issues
+
+### Critical
+- None
+
+### High Priority
+- No unit tests (0% coverage)
+
+### Medium Priority
+- Missing ARIA attributes for accessibility
+- Code duplication in worker files
+- Dynamic array allocation in steganography
+
+### Low Priority
+- Missing JSDoc documentation
+- Hardcoded magic numbers
+- TypeScript `any` type usage
+
+## Contributing
+
+### Code Style
+- TypeScript strict mode
+- Functional React components
+- Tailwind CSS for styling
+- No inline styles (except dynamic)
+
+### Testing Requirements
+- Vitest for unit tests
+- React Testing Library for components
+- 80% coverage target for crypto functions
+
+### Pull Request Process
+1. Fork repository
+2. Create feature branch
+3. Add tests
+4. Ensure all checks pass
+5. Submit PR with description
+
+## License
+
+MIT License - See LICENSE file for details
+
+## Support
+
+- **Documentation**: `/help` page in application
+- **Security Issues**: security@stegcrypt.example.com
+- **Bug Reports**: https://github.com/Ashutoshgit47/stegcrypt/issues
+- **Feature Requests**: https://github.com/Ashutoshgit47/stegcrypt/issues
+
+## Changelog
+
+### Version 1.0.0 (Current)
+- Initial release
+- Steganography: PNG, BMP, WebP, TIFF, WAV
+- Cryptography: AES-256-GCM with PBKDF2
+- Security tools: Password generator, hash calculator, Base64, Hex
+- Mobile responsive design
+- PWA support (offline capable)

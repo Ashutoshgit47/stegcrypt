@@ -108,6 +108,7 @@ export function FileDropzone({
           className={cn(
             'relative flex flex-col items-center justify-center p-6 sm:p-8',
             'border-[3px] border-dashed transition-all cursor-pointer',
+            'focus-within:border-[#1040C0] focus-within:ring-4 focus-within:ring-[#1040C0]/20 focus-within:shadow-[4px_4px_0px_0px_#1040C0]',
             isDragging
               ? 'border-[#D02020] bg-[#D02020]/5 shadow-[4px_4px_0px_0px_#D02020] translate-x-[2px] translate-y-[2px]'
               : 'border-[#121212] dark:border-white hover:bg-[#F0C020]/10 hover:shadow-[4px_4px_0px_0px_#F0C020] hover:border-[#F0C020]',
@@ -117,8 +118,9 @@ export function FileDropzone({
           <input
             type="file"
             accept={accept}
+            aria-label={label || 'Select carrier file'}
             onChange={handleFileInput}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer focus:outline-none"
           />
           <div className={cn(
             'h-12 w-12 flex items-center justify-center border-[3px] mb-3 transition-all',

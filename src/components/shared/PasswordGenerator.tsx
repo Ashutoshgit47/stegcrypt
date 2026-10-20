@@ -146,8 +146,10 @@ export function PasswordGenerator({ onUsePassword, className }: PasswordGenerato
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   readOnly
+                  aria-label="Generated password"
                   placeholder="Click generate..."
-                  className="font-mono text-xs pr-8 border-[2px] border-current rounded-none"
+                  onClick={(e) => (e.target as HTMLInputElement).select()}
+                  className="font-mono text-xs pr-8 border-[2px] border-current rounded-none select-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#F0C020]"
                 />
                 {password && (
                   <button

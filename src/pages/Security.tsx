@@ -67,6 +67,21 @@ export default function Security() {
         title="Cryptography & Security"
         description="Understand StegCrypt's cryptography and security features. AES-256-GCM encryption, PBKDF2 key derivation, local-only processing, and complete transparency about protections."
         path="/security"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'TechArticle',
+          'headline': 'StegCrypt Cryptography & Security Model',
+          'description': 'Technical breakdown of StegCrypt cryptographic architecture, including AES-256-GCM encryption, PBKDF2-SHA256 key derivation, LSB steganography, and zero-knowledge local execution.',
+          'author': {
+            '@type': 'Organization',
+            'name': 'StegCrypt'
+          },
+          'publisher': {
+            '@type': 'Organization',
+            'name': 'StegCrypt',
+            'url': 'https://stegcrypt.app'
+          }
+        }}
       />
       <div className="max-w-4xl mx-auto">
         {/* Header */}

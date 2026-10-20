@@ -5,6 +5,7 @@ interface PageSEOProps {
     description: string;
     path?: string;
     image?: string;
+    schema?: Record<string, any> | Array<Record<string, any>>;
 }
 
 const BASE_URL = 'https://stegcrypt.app';
@@ -14,7 +15,8 @@ export function PageSEO({
     title,
     description,
     path = '',
-    image = DEFAULT_IMAGE
+    image = DEFAULT_IMAGE,
+    schema
 }: PageSEOProps) {
     const fullTitle = title === 'StegCrypt' ? title : `${title} | StegCrypt`;
     const url = `${BASE_URL}${path}`;
@@ -41,6 +43,13 @@ export function PageSEO({
             <meta name="twitter:title" content={fullTitle} />
             <meta name="twitter:description" content={description} />
             <meta name="twitter:image" content={image} />
+
+            {/* Structured Data (JSON-LD) */}
+            {schema && (
+                <script type="application/ld+json">
+                    {JSON.stringify(schema)}
+                </script>
+            )}
         </Helmet>
     );
 }
