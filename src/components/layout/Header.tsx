@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Shield, Lock, Unlock, HelpCircle, Moon, Sun, Monitor, Menu, X, User, Bug, Wrench } from 'lucide-react';
+import { StegCryptLogo } from '@/components/shared/StegCryptLogo';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useMode } from '@/contexts/ModeContext';
 import { Button } from '@/components/ui/button';
@@ -31,8 +32,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto px-4 flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-1.5 transition-opacity hover:opacity-80">
-          <img src="/favicon.svg" alt="StegCrypt Logo" className="h-9 w-9" />
+        <Link to="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
+          <StegCryptLogo className="h-9 w-9 shrink-0" />
           <span className="text-xl font-bold tracking-tight">StegCrypt</span>
         </Link>
 

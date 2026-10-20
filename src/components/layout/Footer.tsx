@@ -1,4 +1,4 @@
-import { Shield, Lock, Heart } from 'lucide-react';
+import { Shield, Coffee, Heart } from 'lucide-react';
 import { GithubIcon as Github } from '@/components/shared/GithubIcon';
 import { Link } from 'react-router-dom';
 
@@ -23,10 +23,16 @@ export function Footer() {
 
           {/* Center — Badges (always centred) */}
           <div className="flex items-center justify-center gap-3">
-            <div className={`${BADGE} bg-white dark:bg-[#1E1E1E] text-[#121212] dark:text-white`}>
-              <Lock className="h-3.5 w-3.5 stroke-[3px] shrink-0" />
-              <span>No Upload</span>
-            </div>
+            <a
+              href="https://ko-fi.com/Y8Y11V9RQ2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${BADGE} bg-[#72a4f2] text-[#121212] group`}
+              title="Support me on Ko-fi"
+            >
+              <Coffee className="h-3.5 w-3.5 stroke-[3px] shrink-0 group-hover:-rotate-12 transition-transform" />
+              <span>Ko-fi</span>
+            </a>
 
             <a
               href="https://github.com/Ashutoshgit47/stegcrypt"

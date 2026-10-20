@@ -1,4 +1,4 @@
-import { Shield, Code, Lock, Zap, Heart, ExternalLink, Image, FileKey } from 'lucide-react';
+import { Shield, Code, Lock, Zap, Heart, ExternalLink, Image, FileKey, Globe } from 'lucide-react';
 import { GithubIcon as Github } from '@/components/shared/GithubIcon';
 import { PageSEO } from '@/components/PageSEO';
 
@@ -150,13 +150,13 @@ export default function About() {
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <a
-                href="https://github.com/Ashutoshgit47/Ashutoshgit47"
+                href="https://ashutosh47.pages.dev/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 px-5 py-2.5 border-[3px] border-[#121212] dark:border-white bg-[#121212] dark:bg-white text-white dark:text-[#121212] shadow-[4px_4px_0px_0px_#D02020] hover:shadow-none hover:translate-x-[4px] hover:translate-y-[4px] transition-all font-black uppercase tracking-widest text-xs"
               >
-                <Github className="h-4 w-4" />
-                GitHub Profile
+                <Globe className="h-4 w-4" />
+                Portfolio
                 <ExternalLink className="h-3 w-3 opacity-50" />
               </a>
               <a
