@@ -9,7 +9,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "indexnow": "node scripts/indexnow.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

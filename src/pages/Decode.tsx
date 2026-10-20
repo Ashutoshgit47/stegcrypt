@@ -471,11 +471,11 @@ export default function Decode() {
               </div>
               <FileDropzone
                 accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
-                maxSize={100}
+                maxSize={isMobileDevice() ? 20 : 100}
                 onFileSelect={handleFileSelect}
                 selectedFile={stegoFile}
                 label="Select encoded carrier"
-                description="PNG, BMP, Lossless WebP, TIFF image or WAV audio"
+                description={isMobileDevice() ? "PNG, BMP, Lossless WebP, TIFF image or WAV audio (max 20 MB)" : "PNG, BMP, Lossless WebP, TIFF image or WAV audio"}
               />
             </div>
 

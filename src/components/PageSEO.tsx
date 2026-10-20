@@ -21,6 +21,25 @@ export function PageSEO({
     const fullTitle = title === 'StegCrypt' ? title : `${title} | StegCrypt`;
     const url = `${BASE_URL}${path}`;
 
+    const breadcrumbSchema = path && path !== '/' ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            {
+                '@type': 'ListItem',
+                'position': 1,
+                'name': 'Home',
+                'item': `${BASE_URL}/`,
+            },
+            {
+                '@type': 'ListItem',
+                'position': 2,
+                'name': title,
+                'item': url,
+            },
+        ],
+    } : null;
+
     return (
         <Helmet>
             {/* Primary Meta Tags */}
@@ -48,6 +67,11 @@ export function PageSEO({
             {schema && (
                 <script type="application/ld+json">
                     {JSON.stringify(schema)}
+                </script>
+            )}
+            {breadcrumbSchema && (
+                <script type="application/ld+json">
+                    {JSON.stringify(breadcrumbSchema)}
                 </script>
             )}
         </Helmet>

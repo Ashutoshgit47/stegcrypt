@@ -47,9 +47,13 @@
   <!-- Canonical -->
   <link rel="canonical" href="https://stegcrypt.app" />
 
-  <!-- Font preconnect for performance (self-hosted fonts loaded via CSS) -->
+  <!-- Fonts: Preconnect & Asynchronous Loading (eliminates render-blocking @import) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap">
+  </noscript>
 
   <!-- Structured Data -->
   <script type="application/ld+json">

@@ -1,7 +1,34 @@
+# Global Security Headers
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://storage.ko-fi.com; connect-src 'self';
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# Immutable caching for Vite hashed production bundles (1 year)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Caching for Favicons and App Manifest (7 days)
+/favicon/*
+  Cache-Control: public, max-age=604800
+/favicon.*
+  Cache-Control: public, max-age=604800
+/apple-touch-icon.png
+  Cache-Control: public, max-age=604800
+/site.webmanifest
+  Cache-Control: public, max-age=86400
+/manifest.json
+  Cache-Control: public, max-age=86400
+
+# Crawlers and Sitemaps (1 hour revalidation)
+/robots.txt
+  Cache-Control: public, max-age=3600
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+/llms.txt
+  Cache-Control: public, max-age=3600
+/llms-full.txt
+  Cache-Control: public, max-age=3600

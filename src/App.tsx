@@ -9,24 +9,24 @@ import { ModeProvider } from "@/contexts/ModeContext";
 import { SEOProvider } from "@/components/SEOProvider";
 import { Layout } from "@/components/layout/Layout";
 
-// Eagerly loaded - core functionality (most visited pages)
+// Core page - eager for instant homepage rendering
 import Index from "./pages/Index";
-import Encode from "./pages/Encode";
-import Decode from "./pages/Decode";
-import NotFound from "./pages/NotFound";
 
-// Lazy loaded - secondary pages for code splitting
+// Lazy loaded - code-split across routes for smaller initial bundle and faster load
+const Encode = lazy(() => import("./pages/Encode"));
+const Decode = lazy(() => import("./pages/Decode"));
+const Tools = lazy(() => import("./pages/Tools"));
 const Security = lazy(() => import("./pages/Security"));
 const Help = lazy(() => import("./pages/Help"));
 const About = lazy(() => import("./pages/About"));
-const Tools = lazy(() => import("./pages/Tools"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
-// Loading fallback for lazy routes
+// Zero-layout-shift loading fallback for lazy routes
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[50vh]">
-    <div className="animate-pulse text-muted-foreground">Loading...</div>
+  <div className="container py-12 flex items-center justify-center min-h-[40vh]" role="status" aria-label="Loading content">
+    <div className="h-8 w-8 border-[3px] border-[#1040C0] border-t-transparent animate-spin" />
   </div>
 );
 

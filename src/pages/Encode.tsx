@@ -426,13 +426,13 @@ export default function Encode() {
                   </div>
                 )}
               </div>
-                <FileDropzone
-                  accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
-                  maxSize={100}
-                  onFileSelect={handleCarrierSelect}
+              <FileDropzone
+                accept="image/png,image/bmp,image/webp,image/tiff,.bmp,.webp,.tiff,.tif,audio/wav,audio/wave,.wav"
+                maxSize={isMobileDevice() ? 20 : 100}
+                onFileSelect={handleCarrierSelect}
                 selectedFile={carrierFile}
                 label="Select carrier file"
-                description="PNG/BMP/WebP/TIFF image or WAV audio"
+                description={isMobileDevice() ? "PNG/BMP/WebP/TIFF image or WAV audio (max 20 MB)" : "PNG/BMP/WebP/TIFF image or WAV audio"}
               />
             </div>
 
@@ -452,10 +452,11 @@ export default function Encode() {
                 {isExpertMode && (
                   <FileDropzone
                     accept="*/*"
-                    maxSize={50}
+                    maxSize={isMobileDevice() ? 10 : 50}
                     onFileSelect={(file) => { setPayloadFile(file); if (file) setPayloadText(''); }}
                     selectedFile={payloadFile}
                     label="Or upload a file"
+                    description={isMobileDevice() ? "Max 10 MB on mobile" : undefined}
                   />
                 )}
               </div>

@@ -5,7 +5,7 @@
 | Feature | Status | Description |
 |---------|--------|-------------|
 | Steganography Mode | ✅ Working | Hide AES-256-GCM encrypted data in PNG, BMP, lossless WebP, TIFF, and PCM WAV carriers |
-| Cryptography-only Mode | ❌ Not implemented | No route, UI, or `.stegcrypt` writer exists. References in `Help.tsx`, `About.tsx`, `Index.tsx`, `public/pricing.md`, `public/markdown-mirror.md`, `public/llm.txt`, and `public/llms.txt` are stale copy |
+| Cryptography-only Mode | ❌ Not implemented | No route, UI, or `.stegcrypt` writer exists. References in `README.md`, `Help.tsx`, `About.tsx`, `Index.tsx`, `public/pricing.md`, `public/markdown-mirror.md`, `public/llm.txt`, and `public/llms.txt` are stale copy |
 | Password Generator | ✅ Working | Cryptographically secure generator with entropy meter; clipboard failures show an error toast |
 | Security Tools | ✅ Working | SHA hash generator, Base64, Hex, Binary, password generator, image converter on `/tools` |
 | Responsive Design | ✅ Working | Mobile-first layout; 2-column tool tabs; mobile navigation menu |
@@ -15,9 +15,9 @@
 | Offline Mode | ✅ Working | Service worker pre-caches the app shell and same-origin static assets |
 | PWA Install | ✅ Working | Add to home screen on Android (Chrome) and iOS 17+ (Safari) |
 | Share Integration | ❌ Not implemented | No Web Share Target in `manifest.json` and no `navigator.share` usage |
-| Mobile File Limits | ⚠️ Not enforced in UI | `constants.ts` defines 20 MB carrier / 10 MB payload limits, but Encode/Decode dropzones use a hardcoded 100 MB carrier cap and 50 MB payload cap |
+| Mobile File Limits | ✅ Enforced in UI | `isMobileDevice()` dynamically applies 20 MB carrier / 10 MB payload caps to dropzones (desktop retains 100 MB / 50 MB) |
 | LSB Depth Lock | ✅ Enforced in logic | `getLsbDepthForPlatform` forces depth 1. The Decode selector still displays 2-4 in Expert Mode, but the effective depth is 1 and a warning is shown |
-| High Security Mode | ❌ Not exposed | The crypto worker's 310K-iteration flag exists, but no UI control sets it on any platform |
+| High Security Mode | ❌ Not exposed | The crypto worker's 310K-iteration PBKDF2 flag exists and is stored in the payload, but no UI control sets it on any platform. The option is named `useArgon2`, but no Argon2 implementation exists |
 
 ### Planned Features
 
@@ -29,9 +29,9 @@
 
 ## Mobile-Specific Behavior
 
-- **File Size Limits**: `constants.ts` caps mobile carriers at 20 MB and payloads at 10 MB. These values are not currently applied by the Encode/Decode dropzones, so a mobile user can select a much larger file. Treat the constants as the intended policy, not an enforced guarantee.
+- **File Size Limits**: Dynamically enforced via `isMobileDevice()` in dropzones: 20 MB carrier limit and 10 MB payload limit on mobile devices, preventing mobile browser memory exhaustion.
 - **LSB Depth**: Fixed at 1 bit in the depth-resolution logic. On Decode, Expert Mode still renders the 1-4 selector; choosing 2-4 shows the "fixed to 1" warning and extraction uses depth 1.
-- **High Security Mode (310K PBKDF2)**: Not available in the UI on any platform. Encryption uses the worker default (100K unless the payload's flag bit says otherwise).
+- **High Security Mode (310K PBKDF2)**: Not available in the UI on any platform. Encryption uses 100K PBKDF2 by default; if a payload was created with the high-security flag, decryption reads that flag and derives with 310K. The option is named `useArgon2`, but no Argon2 implementation exists.
 - **Text Payload Only in Quick Mode**: File payload requires Expert Mode on all devices.
 - **Memory**: Processing needs roughly 3x the carrier size in RAM. Large files on mobile are the most likely source of out-of-memory failures.
 
@@ -41,7 +41,7 @@
 
 | Bug | Severity | Status | Notes |
 |-----|----------|--------|-------|
-| Mobile 20 MB limit not enforced | Medium | Open | Dropzones hardcode 100 MB; `validateCarrierFile`/`validatePayloadFile` are unused |
+| Mobile limits enforced; audio constant discrepancy | Low | By Design | Dropzones enforce 20 MB / 10 MB on mobile and 100 MB / 50 MB on desktop. The 200 MB desktop audio limit in `constants.ts` is not wired |
 | Decode LSB selector misleading on mobile | Low | Open | Options 2-4 remain visible in Expert Mode but resolve to depth 1 |
 | Soft keyboard overlap on iOS | Medium | In Progress | Input fields may be hidden by the virtual keyboard on some iPhone models |
 | 100vh height glitch on iOS Safari | Low | Investigating | Address bar show/hide causes layout shift on `/encode` and `/decode` |
@@ -50,10 +50,10 @@
 
 ### Recently Fixed
 
-- ~~Hero text wrap and fold truncation on small viewports~~ ✅ Fixed (fluid padding `py-12 md:py-16 lg:py-20` and isolated inline badges)
-- ~~Header logo static dark block in mobile light theme~~ ✅ Fixed (`StegCryptLogo` SVG)
-- ~~Mobile tab favicon dark theme contrast and missing webmanifest background~~ ✅ Fixed (`#121212` PWA manifest color + vector SVG)
-- ~~Mobile About page CTA pointed to generic GitHub profile~~ ✅ Fixed (links author portfolio `https://ashutosh47.pages.dev/`)
+- ~~Hero text wrap and fold truncation on small viewports~~ ✅ Fixed (fluid padding `py-12 md:py-16 lg:py-20` and isolated inline badges). Whether the mode section is fully above the fold still depends on viewport height and browser chrome.
+- ~~Header logo static dark block in mobile light theme~~ ✅ Fixed (`StegCryptLogo` SVG, header only; the tab icon is a separate dynamic data-URI)
+- ~~Mobile tab favicon dark theme contrast and missing webmanifest background~~ ✅ Fixed (`#121212` active `manifest.json` background/theme + vector SVG)
+- ~~Mobile About page CTA pointed to generic GitHub profile~~ ✅ Fixed (links author portfolio `https://ashutosh47.pages.dev/`; JSON-LD creator URL synchronized)
 - ~~Mobile footer lacked support link~~ ✅ Fixed (styled Bauhaus Ko-fi button `https://ko-fi.com/Y8Y11V9RQ2`)
 - ~~Crash on device rotation while processing~~ ✅ Fixed
 - ~~Mobile menu not closing after navigation~~ ✅ Fixed

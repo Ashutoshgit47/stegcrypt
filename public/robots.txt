@@ -8,7 +8,7 @@ Allow: /
 User-agent: Applebot
 Allow: /
 
-# AI Search Discovery & Retrieval Crawlers (AI SEO)
+# AI Search Discovery & Retrieval Crawlers (Citations & Answers)
 User-agent: OAI-SearchBot
 Allow: /
 
@@ -27,7 +27,17 @@ Allow: /
 User-agent: Claude-User
 Allow: /
 
+# AI Foundation Model Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
 User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
 Allow: /
 
 # Social Crawlers

@@ -133,27 +133,31 @@ Line numbers below refer to the original audit and may have drifted. Each item h
 ### Visual #4: Hero Title Line-Wrap Artifact
 - **Location**: Index.tsx
 - **Issue**: Leading whitespace inside `<span className="bg-[#D02020]"> Plain</span>` caused a stray 1px red sliver on wrap.
-- **Status (2026-10-20)**: **FIXED**. Wrapped `PLAIN` and `SIGHT` in standalone `inline-block` badges with isolated shadow boxes.
+- **Root cause**: The span was inline-level and included a literal leading space, so the browser could break at the space while the span's red background remained on the previous line.
+- **Status (2026-10-20)**: **FIXED**. Removed the leading space, converted `PLAIN` and `SIGHT` to standalone `inline-block` badges with shadows, added `leading-[1.15]`, a `sm`-only `<br />` after "in", and `{' '}` separators. Padding changed to `py-12 md:py-16 lg:py-20`.
+- **Caveat**: Reduced padding improves first-screen density, but "above the fold" placement remains viewport-dependent.
 
 ### Visual #5: Header Logo Theme Inconsistency
-- **Location**: Header.tsx
+- **Location**: Header.tsx, StegCryptLogo.tsx
 - **Issue**: Logo was a static `<img src="/favicon.svg" />` that remained a dark block in light theme.
-- **Status (2026-10-20)**: **FIXED**. Replaced with `StegCryptLogo` SVG component dynamically reacting to `.dark` class.
+- **Status (2026-10-20)**: **FIXED**. Replaced with `StegCryptLogo`, an inline SVG whose fill/stroke classes use `dark:` variants and `transition-colors`. The tab icon is separate and comes from `ThemeContext.tsx`.
 
 ### Visual #6: Browser Tab Favicon Invisible in Dark Tabs
 - **Location**: public/favicon.svg, index.html, ThemeContext.tsx
-- **Issue**: Dark favicon lacked contrast border in dark tabs; `foreignObject` was dropped by browsers.
-- **Status (2026-10-20)**: **FIXED**. Clean vector SVG with `@media (prefers-color-scheme)` plus dynamic data-URI in `ThemeContext.tsx`.
+- **Issue**: The generated favicon was reported as a ~61 KB `foreignObject`/HTML snapshot that browsers rendered blank/cropped; dark tabs also lacked contrast.
+- **Status (2026-10-20)**: **FIXED**. `public/favicon.svg` is a clean vector with `@media (prefers-color-scheme: dark)`, and `ThemeContext.tsx` writes a theme-specific SVG data URI to the `<link rel="icon" type="image/svg+xml">` element. `index.html` links the root `/favicon.svg`; `public/favicon/` mirrors the assets used by the manifest.
+- **Verification**: Both committed favicon SVGs are plain self-contained vectors and render in headless Chrome. The reported broken snapshot is not present in git history, so the old failure cannot be reproduced from the repository.
 
 ### Visual #7: Missing Author Portfolio Link
 - **Location**: About.tsx
 - **Issue**: About card linked GitHub user profile rather than dedicated portfolio.
-- **Status (2026-10-20)**: **FIXED**. Replaced with Portfolio link to `https://ashutosh47.pages.dev/`.
+- **Status (2026-10-20)**: **FIXED**. Replaced with Portfolio link to `https://ashutosh47.pages.dev/` using the `Globe` icon.
+- **Schema status**: Resolved — AboutPage JSON-LD `creator.url` synchronized to `https://ashutosh47.pages.dev/` matching `index.html`.
 
 ### Visual #8: Footer Support CTA
 - **Location**: Footer.tsx
 - **Issue**: Center badge group lacked a donation/support channel.
-- **Status (2026-10-20)**: **FIXED**. Replaced static "No Upload" badge with styled Bauhaus "Ko-fi" button linking to `https://ko-fi.com/Y8Y11V9RQ2`.
+- **Status (2026-10-20)**: **FIXED**. Replaced static "No Upload" badge with a styled Bauhaus Ko-fi anchor (`#72a4f2`, `Coffee` icon) linking to `https://ko-fi.com/Y8Y11V9RQ2` with `rel="noopener noreferrer"`.
 
 ---
 
@@ -161,9 +165,11 @@ Line numbers below refer to the original audit and may have drifted. Each item h
 
 | Status | Count |
 |--------|-------|
-| Fixed / resolved | 22 |
+| Fixed / resolved | 21 |
 | By design | 1 |
 | Open (low priority) | 5 |
-| **Total** | **28** |
+| **Total** | **27** |
+
+Counts verified against the 27 item headings in this file. The previous 22 fixed / 28 total figure was off by one; the statuses are 21 fixed/resolved, 1 by design, and 5 open.
 
 Open items: dark-mode icon swap (#9), loading-state consistency (#13), image-converter progress (#15), duplicate dead Tailwind config (CSS #1, #4).

@@ -47,7 +47,7 @@ export default function About() {
             'creator': {
               '@type': 'Person',
               'name': 'Ashutosh Gautam',
-              'url': 'https://github.com/Ashutoshgit47'
+              'url': 'https://ashutosh47.pages.dev/'
             }
           }
         }}

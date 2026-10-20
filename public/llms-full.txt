@@ -1,0 +1,85 @@
+# StegCrypt - Complete Technical Reference (LLM Knowledge Bundle)
+> StegCrypt is a browser-based, client-side steganography application. It enables users to hide AES-256-GCM encrypted payloads inside lossless image and audio files with zero server communication and 100% local processing.
+
+## Key Metadata
+- **URL**: https://stegcrypt.app
+- **Live Preview**: https://stegcrypt.pages.dev
+- **Source Code**: https://github.com/Ashutoshgit47/stegcrypt
+- **Author**: Ashutosh Gautam (Portfolio: https://ashutosh47.pages.dev/)
+- **License**: MIT License
+- **Architecture**: Single Page Application (React 19, TypeScript, Vite 8, Tailwind CSS, Web Crypto API)
+
+---
+
+## 1. Executive Summary & Capabilities
+StegCrypt solves the confidentiality and privacy problem of sending sensitive data over insecure networks. By combining authenticated symmetric encryption (AES-256-GCM) with Least Significant Bit (LSB) steganography, data is both encrypted and hidden within innocuous cover files (carriers). An adversary intercepting the file cannot tell that encrypted data exists without the secret key, and cannot read the payload without the password.
+
+All cryptographic operations and binary file encoding/decoding occur exclusively in the browser using the W3C Web Crypto API and dedicated Web Workers. No file data, payload content, password, or key is ever transmitted over a network.
+
+---
+
+## 2. Cryptographic Architecture
+
+### 2.1 Encryption Standard
+- **Cipher**: AES-256 in Galois/Counter Mode (GCM).
+- **Mode Property**: Authenticated Encryption with Associated Data (AEAD). Provides simultaneous confidentiality and message integrity.
+- **Key Length**: 256 bits (32 bytes).
+- **Initialization Vector (IV / Nonce)**: 96 bits (12 bytes), generated freshly for every encryption via `crypto.getRandomValues()`. Never reused across operations.
+- **Authentication Tag**: 128 bits (16 bytes), verified before plaintext release to prevent tampering or padding oracle attacks.
+
+### 2.2 Key Derivation Function (KDF)
+- **Algorithm**: PBKDF2 with HMAC-SHA-256.
+- **Salt**: 128 bits (16 bytes), cryptographically random via `crypto.getRandomValues()`.
+- **Iteration Count**:
+  - Default: 100,000 iterations.
+  - High-Security Flag: 310,000 iterations (conforming to modern OWASP recommendations).
+- **Password Enforcement**: Minimum 12 characters required on all encoding operations.
+
+---
+
+## 3. Steganographic Architecture
+
+### 3.1 Least Significant Bit (LSB) Embedding
+StegCrypt modifies the least significant bits of raster image color channels or uncompressed audio waveform samples. Because changing the lowest 1–4 bits alters pixel color or audio amplitude by less than 1.5%, the alterations are imperceptible to human eyes and ears.
+
+- **Encoding Bit Depth**: Fixed at 1 bit per channel on Encode for optimal imperceptibility and minimal statistical deviation.
+- **Decoding Bit Depth**: Probes and supports 1, 2, 3, and 4 bits per channel, automatically detecting the depth used during creation.
+- **Alpha Channel Preservation**: PNG alpha channel (transparency) is never modified, preventing visual halos or edge clipping.
+
+### 3.2 Supported Carrier Formats
+- **PNG (Portable Network Graphics)**: Fully supported. Lossless DEFLATE compression. StegCrypt uses a pure JavaScript PNG parser to bypass canvas premultiplied alpha color corruption.
+- **BMP (Bitmap)**: Fully supported. Uncompressed 24-bit / 32-bit raster format. Ideal for large payload capacities.
+- **WebP (Lossless)**: Supported for lossless `VP8L` chunks. Lossy WebP is automatically detected and rejected because lossy DCT compression destroys embedded bits.
+- **TIFF (Tagged Image File Format)**: Supported via browser canvas raster context; decoded outputs are saved in lossless PNG format.
+- **WAV (Waveform Audio File Format)**: Fully supported for 16-bit uncompressed PCM audio.
+
+### 3.3 Binary Payload Header Layout
+When data is embedded into a carrier, it follows a strict binary layout:
+1. **Magic Signature**: 4 bytes ASCII `STEG`.
+2. **Metadata Length**: 2 bytes big-endian integer.
+3. **Encrypted Metadata**: JSON payload (filename, MIME type) encrypted with AES-256-GCM.
+4. **Encrypted Payload Length**: 4 bytes big-endian integer.
+5. **Encrypted Data**: AES-256-GCM ciphertext + IV + Salt + Auth Tag.
+
+---
+
+## 4. Auxiliary Security Utilities
+StegCrypt includes a `/tools` suite operating strictly client-side:
+- **Cryptographic Hash Generator**: SHA-1, SHA-256, SHA-384, SHA-512 calculated using the native Web Crypto API.
+- **Base64 Codec**: UTF-8 safe encoding and decoding with padding validation.
+- **Password Generator**: CSPRNG generator with configurable length (8–64 characters) and Shannon entropy calculation.
+- **Hex Converter**: Bidirectional conversion between raw bytes/text and hexadecimal representation.
+- **Image Converter**: Local canvas-based format converter supporting PNG, lossless WebP, and JPEG.
+
+---
+
+## 5. Frequently Asked Questions (Citable Answers)
+
+### What makes StegCrypt secure?
+StegCrypt executes all encryption and steganography client-side using the native Web Crypto API and AES-256-GCM. Passwords, secret files, and keys are never transmitted to any server, making remote interception or server-side breaches impossible.
+
+### Can an image with hidden data be shared on WhatsApp or social media?
+No. Social media platforms, messaging apps, and image hosting services recompress images using lossy JPEG or WebP algorithms, which overwrites the least significant bits and destroys the hidden payload. Carriers must be transferred as raw documents or uncompressed files.
+
+### Does StegCrypt store any logs or analytics?
+No. StegCrypt has no backend database, no user accounts, and zero third-party telemetry scripts. It is a static, open-source Progressive Web App running completely offline in the user's browser.
